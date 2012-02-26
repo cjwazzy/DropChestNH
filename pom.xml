@@ -9,10 +9,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- Project information -->
-	<groupId>com.narrowtux</groupId>
+	<groupId>com.noheroes</groupId>
 	<artifactId>dropchest</artifactId>
-	<version>dev-SNAPSHOT</version>
-	<name>DropChest</name>
+	<name>DropChestNH</name>
+        <version>1.0</version>
 	<url>http://www.narrowtux.com</url>
 	<description>Sucks dropped loot into Chests. Useful for automatic farming or gathering loot from mob traps.</description>
 
@@ -29,22 +29,19 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
-	<!-- Source code -->
-	<scm>
-		<developerConnection>scm:git:git@github.com:narrowtux/${project.name}.git</developerConnection>
-		<connection>scm:git:git://github.com/narrowtux/${project.name}.git</connection>
-		<url>https://github.com/narrowtux/${project.name}</url>
-	</scm>
-
-	<!-- Continuous integration -->
-	<ciManagement>
-		<system>jenkins</system>
-		<url>http://ci.spout.org</url>
-	</ciManagement>
-
+	
 	<!-- Repository locations -->
 	<repositories>
+                <repository>
+                        <id>bukkit-repo</id>
+                        <snapshots>
+                            <enabled>true</enabled>
+                        </snapshots>
+                        <releases>
+                            <enabled>true</enabled>
+                        </releases>
+                        <url>http://repo.bukkit.org/content/groups/public/</url>
+                </repository>
 		<repository>
 			<id>spout-repo</id>
 			<url>http://repo.spout.org</url>
@@ -56,7 +53,7 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>${bukkit.version}</version>
+			<version>1.1-R4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nijikokun.bukkit</groupId>
@@ -66,27 +63,9 @@
 	</dependencies>
 
 	<build>
-		<defaultGoal>clean package</defaultGoal>
-		<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-		<!-- Resources -->
-		<resources>
-			<resource>
-				<targetPath>.</targetPath>
-				<filtering>true</filtering>
-				<directory>${basedir}/src/main/resources</directory>
-				<includes>
-					<include>plugin.yml</include>
-				</includes>
-			</resource>
-			<resource>
-				<targetPath>.</targetPath>
-				<filtering>false</filtering>
-				<directory>${basedir}</directory>
-				<includes>
-					<include>LICENSE.txt</include>
-				</includes>
-			</resource>
-		</resources>
+		<build>
+                        <finalName>${project.name}</finalName>
+                </build>
 		<!-- Plugins -->
 		<plugins>
 			<!-- Compile plugin -->
@@ -103,5 +82,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
