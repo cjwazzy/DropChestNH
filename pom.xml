@@ -1,85 +1,53 @@
-<!--
-	Maven build file for DropChest
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	Copyright (c) 2011-2012 Moritz Schmale <narrow.m@gmail.com>
-	DropChest is licensed under GNU GENERAL PUBLIC LICENSE Version 3
--->
+  <groupId>com.noheroes</groupId>
+  <artifactId>dropchestnh</artifactId>
+  <version>0.1</version>
+  <packaging>jar</packaging>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-
-	<!-- Project information -->
-	<groupId>com.noheroes</groupId>
-	<artifactId>dropchest</artifactId>
-	<name>DropChestNH</name>
-        <version>1.0</version>
-	<url>http://www.narrowtux.com</url>
-	<description>Sucks dropped loot into Chests. Useful for automatic farming or gathering loot from mob traps.</description>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<bukkit.version>1.1-R4-SNAPSHOT</bukkit.version>
-	</properties>
-
-	<!-- License -->
-	<licenses>
-		<license>
-			<name>GNU GENERAL PUBLIC LICENSE Version 3</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	
-	<!-- Repository locations -->
-	<repositories>
-                <repository>
-                        <id>bukkit-repo</id>
-                        <snapshots>
-                            <enabled>true</enabled>
-                        </snapshots>
-                        <releases>
-                            <enabled>true</enabled>
-                        </releases>
-                        <url>http://repo.bukkit.org/content/groups/public/</url>
-                </repository>
-		<repository>
-			<id>spout-repo</id>
-			<url>http://repo.spout.org</url>
-		</repository>
-	</repositories>
-
-	<!-- Dependencies -->
-	<dependencies>
-		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>1.1-R4</version>
-		</dependency>
-		<dependency>
-			<groupId>com.nijikokun.bukkit</groupId>
-			<artifactId>permissions</artifactId>
-			<version>3.1.6</version>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<build>
-                        <finalName>${project.name}</finalName>
-                </build>
-		<!-- Plugins -->
-		<plugins>
-			<!-- Compile plugin -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-			</plugin>
-			<!-- JAR creation plugin -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.2</version>
-			</plugin>
-		</plugins>
-	</build>
+  <name>DropChestNH</name>
+  <url>http://maven.apache.org</url>
+  
+  <build>
+    <finalName>${project.artifactId}</finalName>
+  </build>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <repositories>
+        <repository>
+            <id>bukkit-repo</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <url>http://repo.bukkit.org/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>spout-repo</id>
+            <url>http://repo.getspout.org</url>
+        </repository>
+  </repositories>
+  <dependencies>
+      <dependency>
+            <!-- Grabs from Bukkit Artifactory -->
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.1-R4</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>Vault</artifactId>
+            <version>1.2.8</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+  </dependencies>
 </project>
