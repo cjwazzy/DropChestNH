@@ -4,8 +4,6 @@
  */
 package com.noheroes.dropchestnh;
 
-import com.noheroes.dropchestnh.internals.DropChestObj;
-import java.util.HashMap;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -14,9 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class DropChestNH extends JavaPlugin {
     
-    private static final HashMap<Integer, DropChestObj> dropChestHashMap = new HashMap<Integer, DropChestObj>();
-    private static final HashMap<String, Integer> dcNameToIDMap = new HashMap<String, Integer>();
-    
+
     @Override
     public void onDisable() {
         
@@ -24,6 +20,7 @@ public class DropChestNH extends JavaPlugin {
     
     @Override
     public void onEnable() {
+
         
     }
     
