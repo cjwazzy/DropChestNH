@@ -2,7 +2,7 @@ name: DropChest
 version: 0.1
 author: Morthis
 description: Chests can be configured to pick items up off the ground, or add/remove items from passing storage minecarts.
-main: com.noheroes.dropchest.DropChest
+main: com.noheroes.dropchestnh.DropChestNH
 commands:
   dropchest:
     description: Dropchest commands
