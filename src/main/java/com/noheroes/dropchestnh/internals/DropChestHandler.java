@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -29,7 +30,7 @@ public class DropChestHandler {
     private static final HashMap<String, LinkedHashSet<Integer>> dcMapPlayerNameToID = new HashMap<String, LinkedHashSet<Integer>>();
     private static int currentChestID = 1;
     private static Set<BlockFace> cardinalFaces = new LinkedHashSet<BlockFace>();
-    private static DropChestNH dc;
+    static DropChestNH dc;
     
     public DropChestHandler(DropChestNH dc) {
         this.dc = dc;
@@ -39,19 +40,19 @@ public class DropChestHandler {
         cardinalFaces.add(BlockFace.WEST);
     }
     
-    public boolean addChest(Block block, Player player) {
-        return addChest(block, player, null);
+    public boolean addChest(Block chest, Player player) {
+        return addChest(chest, player, null);
     }
     
-    public boolean addChest(Block block, Player player, String chestName) {
-        if (!block.getType().equals(Material.CHEST)) {
+    public boolean addChest(Block chest, Player player, String chestName) {
+        if (!chest.getType().equals(Material.CHEST)) {
             return false;
         }
-        if (dcMapLocationToID.containsKey(block.getLocation())) {
+        if (dcMapLocationToID.containsKey(chest.getLocation())) {
             return false;   // Chest is already a dropchest
         }
         
-        Block adjacentChest = findAdjacentChest(block);
+        Block adjacentChest = findAdjacentChest(chest);
         Location primaryLocation;
         Location secondaryLocation;
         DropChestObj dropChest;
@@ -62,22 +63,22 @@ public class DropChestHandler {
         }
         // Single chest
         if (adjacentChest == null) {
-            primaryLocation = block.getLocation();
+            primaryLocation = chest.getLocation();
             secondaryLocation = null;
         }
         // Double chest
         else {
-            // The North-most or East-most chest holds the top 3 rows of the inventory and is the primary chest
-            if ((block.getRelative(BlockFace.NORTH).equals(adjacentChest)) || block.getRelative(BlockFace.EAST).equals(adjacentChest)) {
-                primaryLocation = adjacentChest.getLocation();
-                secondaryLocation = block.getLocation();
-            }
-            else {
-                primaryLocation = block.getLocation();
+            // Find out which is primary and which is secondary chest so that inventory always fills from top down
+            if (checkPrimaryChest(chest, adjacentChest)) {
+                primaryLocation = chest.getLocation();
                 secondaryLocation = adjacentChest.getLocation();
             }
+            else {
+                primaryLocation = adjacentChest.getLocation();
+                secondaryLocation = chest.getLocation();
+            }
         }
-        dropChest = new DropChestObj(player.getName(), chestName, primaryLocation, secondaryLocation);
+        dropChest = new DropChestObj(currentChestID, player.getName(), chestName, primaryLocation, secondaryLocation);
         // Add chest to hashmap
         dcHashMap.put(currentChestID, dropChest);
         // Add chest name mapping if applicable
@@ -131,6 +132,88 @@ public class DropChestHandler {
         return true;        
     }
     
+    // Check blocks next to the parameter for dropchests and update the dropchest to a double dropchest if one is found
+    public boolean doubleChestCheck(Block chest) {
+        if (!chest.getType().equals(Material.CHEST)) {
+            return false;
+        }
+        Block adjacentChest;
+        adjacentChest = findAdjacentChest(chest);
+        if (adjacentChest == null) {
+            return false;
+        }
+        Integer chestID;
+        chestID = dcMapLocationToID.get(adjacentChest.getLocation());
+        
+        // The second half of the double chest is not a dropchest
+        if (chestID == null) {
+            return false;
+        }
+        
+        dcMapLocationToID.put(chest.getLocation(), chestID);
+        //DropChestObj dropChest = dcHashMap.get(chestID);
+        // Update the locations for dropchest object
+        if (checkPrimaryChest(chest, adjacentChest)) {
+            dcHashMap.get(chestID).setPrimaryLocation(chest.getLocation());
+            dcHashMap.get(chestID).setSecondaryLocation(adjacentChest.getLocation());
+            dc.log("Primary changing");
+        }
+        else {
+            // The primary chest remains the same and is already stored, no need to add it again
+            dcHashMap.get(chestID).setSecondaryLocation(chest.getLocation());
+            dc.log("Primary remains");
+        }
+        return true;
+    }
+    
+    // Adds item to chest with ID chestID.  Returns anything that didn't fit, or null if everything fit
+    public ItemStack addItem(Integer chestID, ItemStack item) {
+        if ((chestID == null) || (item == null)) {
+            return null;
+        }
+        
+        // TODO: item is passed as reference and being changed somehwere, look into
+        ItemStack inputItem = item.clone();
+        DropChestObj dropChest;
+        dropChest = dcHashMap.get(chestID);
+        HashMap<Integer, ItemStack> leftOverItems;
+        // Check if the bottom half of the inventory already contains some of the item
+        if (dropChest.getSecondaryInventory() == null) {
+            leftOverItems = dropChest.getPrimaryInventory().addItem(inputItem);
+            dc.log("Single chest using " + dropChest.getPrimaryInventory().toString());
+        }
+        else {
+            if (dropChest.getSecondaryInventory().contains(inputItem.getType())) {
+                dc.log("Double using secondary: " + dropChest.getSecondaryInventory().toString());
+                leftOverItems = dropChest.getSecondaryInventory().addItem(inputItem);
+                // Check if everything fit, put the rest in top if not
+                if ((leftOverItems != null) && !leftOverItems.isEmpty()) {
+                    // Because this method only accepts one ItemStack at a time we know leftover items are at index 0
+                    leftOverItems = dropChest.getPrimaryInventory().addItem(leftOverItems.get(0));      
+                }
+            }
+            else {
+                dc.log("Double using primary: " + dropChest.getPrimaryInventory().toString());
+                leftOverItems = dropChest.getPrimaryInventory().addItem(inputItem);
+                if ((leftOverItems != null) && !leftOverItems.isEmpty()) {
+                    leftOverItems = dropChest.getSecondaryInventory().addItem(leftOverItems.get(0));
+                }
+            }
+        }
+        return ((leftOverItems == null) ? null : leftOverItems.get(0));
+    }
+    
+    public ItemStack addItem(Location location, ItemStack item) {
+        return addItem(dcMapLocationToID.get(location), item);
+    }
+    
+    // Checks which chest is primary.  Returns true if the order is correct (first parameter primary, second secondary) or false it should be reversed
+    // The primary chest holds the top 3 rows of the inventory and is always the north or east most chest.
+    public boolean checkPrimaryChest(Block primaryChest, Block secondaryChest) {
+        return (secondaryChest.getRelative(BlockFace.NORTH).equals(primaryChest)) || 
+                secondaryChest.getRelative(BlockFace.EAST).equals(primaryChest);
+    }
+    
     public boolean ownsChest(Location location, Player player) {
         Integer chestID = dcMapLocationToID.get(location);
         if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
@@ -146,8 +229,7 @@ public class DropChestHandler {
         }
         catch (NumberFormatException ex) {
             chestID = dcMapChestNameToID.get(identifier);
-        }
-        
+        }        
         return chestID;
     }
     

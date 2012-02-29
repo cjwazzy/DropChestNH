@@ -26,7 +26,6 @@ public class DropChestNH extends JavaPlugin {
     @Override
     public void onEnable() {
         this.getServer().getPluginManager().registerEvents(dcListener, this);
-        
     }
     
     public void log(String message) {
