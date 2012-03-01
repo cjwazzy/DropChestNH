@@ -11,7 +11,7 @@
 	<!-- Project information -->
 	<groupId>com.noheroes</groupId>
 	<artifactId>dropchest</artifactId>
-	<name>DropChestNH</name>
+	<name>DropChest</name>
         <version>1.0</version>
 	<url>http://www.narrowtux.com</url>
 	<description>Sucks dropped loot into Chests. Useful for automatic farming or gathering loot from mob traps.</description>
@@ -53,19 +53,17 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.1-R4</version>
+			<version>1.1-R6</version>
 		</dependency>
 		<dependency>
-			<groupId>com.nijikokun.bukkit</groupId>
-			<artifactId>permissions</artifactId>
-			<version>3.1.6</version>
+			<groupId>net.milkbowl</groupId>
+			<artifactId>vault</artifactId>
+			<version>1.2.12</version>
 		</dependency>
 	</dependencies>
 
 	<build>
-		<build>
-                        <finalName>${project.name}</finalName>
-                </build>
+                <finalName>${project.name}</finalName>
 		<!-- Plugins -->
 		<plugins>
 			<!-- Compile plugin -->

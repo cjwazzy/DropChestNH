@@ -17,12 +17,12 @@
 
 package com.noheroes.dropchest;
 
-import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.Permissions;
+
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -31,13 +31,12 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
@@ -51,7 +50,7 @@ public class DropChest extends JavaPlugin {
 	private final DropChestWorldListener worldListener = new DropChestWorldListener();
 	private final HashMap<Player, Boolean> debugees = new HashMap<Player, Boolean>();
 	private EntityWatcher entityWatcher;
-	public PermissionHandler Permissions = null;
+	public Permission permission = null;
 	@SuppressWarnings("unused")
 	private String version = "0.0";
 	private DropChestVehicleListener vehicleListener = new DropChestVehicleListener(this);
@@ -68,18 +67,25 @@ public class DropChest extends JavaPlugin {
 
 	public void onEnable() {
 		log = getServer().getLogger();
-		setupPermissions();
+		
+                if (!setupPermissions()) {
+                    this.getLogger().log(Level.SEVERE, "Could not set up permissions using vault");
+                }
 
 		//Register the Entity Watcher
 		entityWatcher = new EntityWatcher(this);
 		watcherid = getServer().getScheduler().scheduleSyncRepeatingTask(this, entityWatcher, 10,10);
 		// Register our events
 		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvent(Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
-		pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
-		pm.registerEvent(Type.VEHICLE_MOVE, vehicleListener, Priority.Normal, this);
+                pm.registerEvents(blockListener, this);
+                pm.registerEvents(playerListener, this);
+                pm.registerEvents(vehicleListener, this);
+                pm.registerEvents(worldListener, this);
+		//pm.registerEvent(Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
+		//pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
+		//pm.registerEvent(Type.VEHICLE_MOVE, vehicleListener, Priority.Normal, this);
 		//pm.registerEvent(Type.CHUNK_UNLOAD, worldListener, Priority.Normal, this);
-		pm.registerEvent(Type.REDSTONE_CHANGE, blockListener, Priority.Normal, this);
+		//pm.registerEvent(Type.REDSTONE_CHANGE, blockListener, Priority.Normal, this);
 
 		//Read plugin file
 		PluginDescriptionFile pdfFile = this.getDescription();
@@ -104,23 +110,14 @@ public class DropChest extends JavaPlugin {
 		save();
 	}
 
-	public void setupPermissions() {
-		try{
-			Plugin test = this.getServer().getPluginManager().getPlugin("Permissions");
-
-			if(this.Permissions == null) {
-				try{
-					this.Permissions = ((Permissions)test).getHandler();
-				} catch(Exception e) {
-					this.Permissions = null;
-					//log.log(Level.WARNING, "Permissions is not enabled! All Operations are allowed!");
-				}
-			}
-		} catch(java.lang.NoClassDefFoundError e){
-			this.Permissions = null;
-			//log.log(Level.WARNING, "Permissions not found! All Operations are allowed!");
-		}
-	}
+        private Boolean setupPermissions()
+        {
+            RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+            if (permissionProvider != null) {
+                permission = permissionProvider.getProvider();
+            }
+            return (permission != null);
+        }
 
 	private void load(){
                 isLoading = true;
@@ -210,7 +207,7 @@ public class DropChest extends JavaPlugin {
 	}
 
 	public Boolean isNear(Location loc1, Location loc2, double maxDistance){
-		if(loc1.getWorld().getId()!=loc2.getWorld().getId()){
+		if(loc1.getWorld().getUID()!=loc2.getWorld().getUID()){
 			return false;
 		}
 		double x1 = loc1.getX(), x2 = loc2.getX(), y1 = loc1.getY(), y2 = loc2.getY(), z1 = loc1.getZ(), z2 = loc2.getZ();
@@ -716,21 +713,15 @@ public class DropChest extends JavaPlugin {
 		if(player == null){
 			return 65536;
 		} else {
-			if(Permissions==null){
+			if(permission==null){
 				return 65536;
 			}
-			int max = Permissions.getUserPermissionInteger(player.getWorld().getName(), player.getName(), "dropchestmaxradius");
-			if(max==-1){
-				max = Permissions.getGroupPermissionInteger(player.getWorld().getName(), Permissions.getGroup(player.getWorld().getName(), player.getName()), "dropchestmaxradius");
-				if(max==-1)
-					max = config.getFallbackRadius();
-			}
-			return max;
+			return config.getFallbackRadius();
 		}
 	}
 
 	public boolean hasPermission(Player player, String node){
-		if(Permissions==null)
+		if(permission==null)
 		{
 			return player.hasPermission(node);
 		}
@@ -738,10 +729,10 @@ public class DropChest extends JavaPlugin {
 		{
 			return true;
 		} else {
-			if(Permissions.has(player, "*")){
+			if(permission.has(player, "*")){
 				return true;
 			} else {
-				return Permissions.has(player, node);
+				return permission.has(player, node);
 			}
 		}
 	}
@@ -759,9 +750,10 @@ public class DropChest extends JavaPlugin {
 		}
 	}
 
+        /*
 	public World getWorldWithId(long worldid){
 		for (World w : getServer().getWorlds()){
-			if(w.getId()==worldid){
+			if(w.getUID()==worldid){
 				return w;
 			}
 		}
@@ -769,7 +761,7 @@ public class DropChest extends JavaPlugin {
 			return getServer().getWorlds().get(0);
 		}
 		return null;
-	}
+	}*/
 
 	public Location locationOf(Block block){
 		return block.getLocation();

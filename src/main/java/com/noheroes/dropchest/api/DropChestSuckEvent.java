@@ -24,14 +24,12 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 public class DropChestSuckEvent extends Event implements Cancellable{
-	private static final long serialVersionUID = -4108296697557863586L;
         private static final HandlerList handlers = new HandlerList();
 	private DropChestItem chest;
 	private Item item;
 	private boolean cancel;
 
 	public DropChestSuckEvent(DropChestItem chest, Item item) {
-		super("DropChestSuckEvent");
 		cancel = false;
 		this.chest = chest;
 		this.item = item;

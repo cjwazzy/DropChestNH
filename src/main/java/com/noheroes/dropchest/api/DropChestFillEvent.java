@@ -26,7 +26,6 @@ public class DropChestFillEvent extends Event {
         private static final HandlerList handlers = new HandlerList();
         
 	public DropChestFillEvent(DropChestItem chest) {
-		super("DropChestFillEvent");
 		this.chest = chest;
 	}
 

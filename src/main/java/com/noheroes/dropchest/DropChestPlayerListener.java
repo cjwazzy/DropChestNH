@@ -22,15 +22,16 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.ContainerBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 
 /**
  * Handle events for all Player related events
  * @author narrowtux
  */
-public class DropChestPlayerListener extends PlayerListener {
+public class DropChestPlayerListener implements Listener {
 	private final DropChest plugin;
 
 	public DropChestPlayerListener(DropChest instance) {
@@ -38,7 +39,7 @@ public class DropChestPlayerListener extends PlayerListener {
 
 	}
 
-	@Override
+	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event){
 		if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
 			if(event.isCancelled()){

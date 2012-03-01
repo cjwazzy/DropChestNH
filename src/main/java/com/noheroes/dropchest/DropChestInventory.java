@@ -18,8 +18,13 @@
 package com.noheroes.dropchest;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 public class DropChestInventory implements Inventory {
@@ -43,7 +48,8 @@ public class DropChestInventory implements Inventory {
 				return ret;
 			} else {
 				ItemStack demo[] = {};
-				ItemStack items[] = (ItemStack[])ret.values().toArray(demo);
+				//ItemStack items[] = (ItemStack[])ret.values().toArray(demo);
+                                ItemStack items[] = ret.values().toArray(demo);
 				ret = inv.addItem(items);
 			}
 		}
@@ -251,6 +257,31 @@ public class DropChestInventory implements Inventory {
 	public void setItem(int arg0, ItemStack arg1) {
 		mapToLocalInventory(arg0).setItem(mapToLocalSlot(arg0), arg1);
 	}
+        
+        @Override
+        public ListIterator<ItemStack> iterator() {
+            return null;
+        }
+        
+        @Override
+        public InventoryHolder getHolder() {
+            return null;
+        }
+        
+        @Override
+        public InventoryType getType() {
+            return null;
+        }
+        
+        @Override
+        public String getTitle() {
+            return null;
+        }
+        
+        @Override
+        public List<HumanEntity> getViewers() {
+            return null;
+        }
 
 	private Inventory mapToLocalInventory(int slot){
 		//confirmed to work.
