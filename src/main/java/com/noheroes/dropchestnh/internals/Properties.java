@@ -9,6 +9,10 @@ package com.noheroes.dropchestnh.internals;
  * @author PIETER
  */
 public class Properties {
+    
+    public static enum Filter {
+        PUSH, PULL, SUCK
+    }
       
     private Properties () {}
     

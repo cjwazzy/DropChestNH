@@ -4,7 +4,9 @@
  */
 package com.noheroes.dropchestnh.internals;
 
-import com.noheroes.dropchestnh.DropChestNH;
+import com.noheroes.dropchestnh.internals.Properties.Filter;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
@@ -20,6 +22,10 @@ public class DropChestObj {
     private int chestID;
     private String chestName;
     private String ownerName;
+    private Set<Integer> suckFilter;
+    private Set<Integer> pullFilter;
+    private Set<Integer> pushFilter;
+    
     
     public DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation, Location secondaryLocation) {
 
@@ -28,10 +34,9 @@ public class DropChestObj {
         this.chestName = chestName;
         this.ownerName = ownerName;
         this.chestID = chestID;
-        DropChestHandler.dc.log("Created DC.  Primary loc: " + primaryLocation.toString());
-        if (secondaryLocation != null) {
-            DropChestHandler.dc.log("Created DC.  Secondary loc: " + secondaryLocation.toString());
-        }
+        this.suckFilter = new LinkedHashSet<Integer>();
+        this.pullFilter = new LinkedHashSet<Integer>();
+        this.pushFilter = new LinkedHashSet<Integer>();
     }
     
     public DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation) {
@@ -76,11 +81,48 @@ public class DropChestObj {
     
     public void setPrimaryLocation(Location location) {
         primaryLocation = location;
-        DropChestHandler.dc.log("Updating primary to " + location.toString());
     }
     
     public void setSecondaryLocation(Location location) {
         secondaryLocation = location;
-        DropChestHandler.dc.log("Updating secondary to " + location.toString());
+    }
+    
+    // Adds the material to the list if it's not present and returns true, removes the material if it's on the list and returns false
+    public boolean updateFilter(Integer MatID, Filter filter) {
+        if (getFilter(filter).contains(MatID)) {
+            getFilter(filter).remove(MatID);
+            return false;
+        }
+        else {
+            getFilter(filter).add(MatID);
+            return true;
+        }
+    }
+    
+    public void clearFilter(Filter filter) {
+        getFilter(filter).clear();
+    }
+    
+    public void addAllFilter(Filter filter) {
+        for (Material mat : Material.values()) {
+            getFilter(filter).add(mat.getId());
+        }
+    }
+    
+    public boolean filterContains(Integer matID, Filter filter) {
+        return getFilter(filter).contains(matID);
+    }
+
+    private Set<Integer> getFilter(Filter filter) {
+        switch(filter) {
+            case SUCK: 
+                return suckFilter;
+            case PUSH:
+                return pushFilter;
+            case PULL:
+                return pullFilter;
+            default:
+                return null;
+        }
     }
 }

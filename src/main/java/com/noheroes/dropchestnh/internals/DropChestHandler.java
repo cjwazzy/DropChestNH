@@ -180,11 +180,9 @@ public class DropChestHandler {
         // Check if the bottom half of the inventory already contains some of the item
         if (dropChest.getSecondaryInventory() == null) {
             leftOverItems = dropChest.getPrimaryInventory().addItem(inputItem);
-            dc.log("Single chest using " + dropChest.getPrimaryInventory().toString());
         }
         else {
             if (dropChest.getSecondaryInventory().contains(inputItem.getType())) {
-                dc.log("Double using secondary: " + dropChest.getSecondaryInventory().toString());
                 leftOverItems = dropChest.getSecondaryInventory().addItem(inputItem);
                 // Check if everything fit, put the rest in top if not
                 if ((leftOverItems != null) && !leftOverItems.isEmpty()) {
@@ -193,7 +191,6 @@ public class DropChestHandler {
                 }
             }
             else {
-                dc.log("Double using primary: " + dropChest.getPrimaryInventory().toString());
                 leftOverItems = dropChest.getPrimaryInventory().addItem(inputItem);
                 if ((leftOverItems != null) && !leftOverItems.isEmpty()) {
                     leftOverItems = dropChest.getSecondaryInventory().addItem(leftOverItems.get(0));
@@ -205,13 +202,6 @@ public class DropChestHandler {
     
     public ItemStack addItem(Location location, ItemStack item) {
         return addItem(dcMapLocationToID.get(location), item);
-    }
-    
-    // Checks which chest is primary.  Returns true if the order is correct (first parameter primary, second secondary) or false it should be reversed
-    // The primary chest holds the top 3 rows of the inventory and is always the north or east most chest.
-    public boolean checkPrimaryChest(Block primaryChest, Block secondaryChest) {
-        return (secondaryChest.getRelative(BlockFace.NORTH).equals(primaryChest)) || 
-                secondaryChest.getRelative(BlockFace.EAST).equals(primaryChest);
     }
     
     public boolean ownsChest(Location location, Player player) {
@@ -233,7 +223,14 @@ public class DropChestHandler {
         return chestID;
     }
     
-    public Block findAdjacentChest(Block block) {
+    // Checks which chest is primary.  Returns true if the order is correct (first parameter primary, second secondary) or false it should be reversed
+    // The primary chest holds the top 3 rows of the inventory and is always the north or east most chest.
+    private boolean checkPrimaryChest(Block primaryChest, Block secondaryChest) {
+        return (secondaryChest.getRelative(BlockFace.NORTH).equals(primaryChest)) || 
+                secondaryChest.getRelative(BlockFace.EAST).equals(primaryChest);
+    }
+    
+    private Block findAdjacentChest(Block block) {
         // Check the four cardinal directions for another chest to detect double chests
         for (BlockFace bf : cardinalFaces) {
             if (block.getRelative(bf).getType().equals(Material.CHEST)) {
