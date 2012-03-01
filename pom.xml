@@ -11,7 +11,7 @@
 	<!-- Project information -->
 	<groupId>com.noheroes</groupId>
 	<artifactId>dropchest</artifactId>
-	<name>DropChest</name>
+	<name>dropchest</name>
         <version>1.0</version>
 	<url>http://www.narrowtux.com</url>
 	<description>Sucks dropped loot into Chests. Useful for automatic farming or gathering loot from mob traps.</description>

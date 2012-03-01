@@ -543,7 +543,7 @@ public class DropChestItem implements Serializable{
 		} else {
 			for(int i = 0; i<chinv.getSize();i++){
 				ItemStack items = chinv.getItem(i);
-				if(items.getAmount()!=0){
+				if((items != null) && (items.getAmount()!=0)){
 					if(getFilter(FilterType.PUSH).contains(items.getType())){
 						HashMap<Integer,ItemStack> hash = miinv.addItem(items);
 						if(hash.size()!=0){
@@ -557,8 +557,11 @@ public class DropChestItem implements Serializable{
 				}
 			}
 			for(int i = 0; i<miinv.getSize();i++){
-				ItemStack items = miinv.getItem(i).clone();
-				if(items.getAmount()!=0){
+				ItemStack items = null;
+                                if (miinv.getItem(i) != null) {
+                                    items = miinv.getItem(i).clone();
+                                }
+				if((items != null) && (items.getAmount()!=0)){
 					if(getFilter(FilterType.PULL).contains(items.getType())){
 						HashMap<Integer,ItemStack> hash = addItem(items, FilterType.PULL);
 						if(hash.size()!=0){
