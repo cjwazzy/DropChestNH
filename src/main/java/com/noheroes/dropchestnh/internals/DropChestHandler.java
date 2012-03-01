@@ -5,6 +5,8 @@
 package com.noheroes.dropchestnh.internals;
 
 import com.noheroes.dropchestnh.DropChestNH;
+import com.noheroes.dropchestnh.exceptions.IncorrectFilterParametersException;
+import com.noheroes.dropchestnh.internals.Properties.Filter;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -202,6 +204,40 @@ public class DropChestHandler {
     
     public ItemStack addItem(Location location, ItemStack item) {
         return addItem(dcMapLocationToID.get(location), item);
+    }
+    
+    public boolean updateFilter(String mat, Integer chestID, Filter filter) throws IncorrectFilterParametersException {
+
+        if (!dcHashMap.containsKey(chestID)) {
+            throw new IncorrectFilterParametersException("That chest does not exist or is not a dropchest.");
+        }
+        
+        Material material;
+        // Check if material is referenced by enum
+        try {
+            material = Material.valueOf(mat.toUpperCase());
+        }
+        catch (IllegalArgumentException ex) {
+            material = null;
+        }
+        // Material was matched
+        if (material != null) {
+            return dcHashMap.get(chestID).updateFilter(material.getId(), filter);
+        }
+        // Material was not matched, check if material is referenced by ID
+        else {
+            Integer materialID;
+            try {
+                materialID = Integer.valueOf(mat);
+            }
+            catch (NumberFormatException ex) {
+                throw new IncorrectFilterParametersException("Material " + mat + " does not exist");
+            }
+            
+            // TEMP SWITCHING BRANCHES, CONTINUE FROM HERE.
+            //material = Material.getm
+            return dcHashMap.get(chestID).updateFilter(materialID, filter);
+        }
     }
     
     public boolean ownsChest(Location location, Player player) {
