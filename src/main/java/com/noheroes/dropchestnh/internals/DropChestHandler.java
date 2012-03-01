@@ -208,18 +208,13 @@ public class DropChestHandler {
     
     public boolean updateFilter(String mat, Integer chestID, Filter filter) throws IncorrectFilterParametersException {
 
-        if (!dcHashMap.containsKey(chestID)) {
+        if ((chestID == null ) || (!dcHashMap.containsKey(chestID))) {
             throw new IncorrectFilterParametersException("That chest does not exist or is not a dropchest.");
         }
         
         Material material;
         // Check if material is referenced by enum
-        try {
-            material = Material.valueOf(mat.toUpperCase());
-        }
-        catch (IllegalArgumentException ex) {
-            material = null;
-        }
+        material = Material.getMaterial(mat);
         // Material was matched
         if (material != null) {
             return dcHashMap.get(chestID).updateFilter(material.getId(), filter);
@@ -233,13 +228,55 @@ public class DropChestHandler {
             catch (NumberFormatException ex) {
                 throw new IncorrectFilterParametersException("Material " + mat + " does not exist");
             }
-            
-            // TEMP SWITCHING BRANCHES, CONTINUE FROM HERE.
-            //material = Material.getm
+            // Check if material ID exists
+            material = Material.getMaterial(materialID);
+            if (material == null) {
+                throw new IncorrectFilterParametersException("Material " + mat + " does not exist");
+            }
             return dcHashMap.get(chestID).updateFilter(materialID, filter);
         }
     }
     
+    public boolean updateFilter(String mat, Location location, Filter filter) throws IncorrectFilterParametersException {
+        Integer chestID = dcMapLocationToID.get(location);
+        return updateFilter(mat, chestID, filter);
+    }
+    
+    // Attempts to find the chestID by matching indentifier against or chestID or chest name
+    public boolean updateFilter(String mat, String identifier, Filter filter) throws IncorrectFilterParametersException {
+        return updateFilter(mat, getChestID(identifier), filter);
+    }
+    
+    public void clearFilter(Integer chestID, Filter filter) throws IncorrectFilterParametersException {
+        if (chestID == null) {
+            throw new IncorrectFilterParametersException("That chest does not exist or is not a dropchest.");
+        }
+        dcHashMap.get(chestID).clearFilter(filter);
+    }
+    
+    public void clearFilter(Location location, Filter filter) throws IncorrectFilterParametersException {
+        clearFilter(dcMapLocationToID.get(location), filter);
+    }
+    
+    public void clearFilter(String identifier, Filter filter) throws IncorrectFilterParametersException {
+        clearFilter(getChestID(identifier), filter);
+    }
+    
+    public void addAllFilter(Integer chestID, Filter filter) throws IncorrectFilterParametersException {
+        if (chestID == null) {
+            throw new IncorrectFilterParametersException("That chest does not exist or is not a dropchest.");
+        }
+        dcHashMap.get(chestID).addAllFilter(filter);
+    }
+    
+    public void addAllFilter(Location location, Filter filter) throws IncorrectFilterParametersException {
+        addAllFilter(dcMapLocationToID.get(location), filter);
+    }
+    
+    public void addAllFilter(String identifier, Filter filter) throws IncorrectFilterParametersException {
+        addAllFilter(getChestID(identifier), filter);
+    }
+        
     public boolean ownsChest(Location location, Player player) {
         Integer chestID = dcMapLocationToID.get(location);
         if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
