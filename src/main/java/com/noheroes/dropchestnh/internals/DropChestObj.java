@@ -4,7 +4,8 @@
  */
 package com.noheroes.dropchestnh.internals;
 
-import com.noheroes.dropchestnh.internals.Properties.Filter;
+import com.noheroes.dropchestnh.DropChestNH;
+import com.noheroes.dropchestnh.internals.Utils.Filter;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.bukkit.Location;

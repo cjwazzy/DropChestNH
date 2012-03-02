@@ -9,11 +9,16 @@ package com.noheroes.dropchestnh.internals;
  * @author PIETER
  */
 public class Properties {
-    
-    public static enum Filter {
-        PUSH, PULL, SUCK
-    }
-      
+   
     private Properties () {}
     
+    
+    
+    
+    // Permissions  
+    public static final String createSuckPerm = "dropchest.create.suck";
+    public static final String createPullPerm = "dropchest.create.pull";
+    public static final String createPushPerm = "dropchest.create.push";
+    
+    public static final String createChestPerm = "dropchestCreatePerm";   // Not an actual permission, only use for internal permission handling, do not change
 }

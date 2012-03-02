@@ -8,11 +8,15 @@ package com.noheroes.dropchestnh.exceptions;
  *
  * @author PIETER
  */
-public class IncorrectFilterParametersException extends Exception {
+public class InsufficientPermissionsException extends Exception {
     private String message;
     
-    public IncorrectFilterParametersException(String message) {
+    public InsufficientPermissionsException(String message) {
         this.message = message;
+    }
+    
+    public InsufficientPermissionsException() {
+        this.message = "You do not have permission to use this command";
     }
     
     @Override

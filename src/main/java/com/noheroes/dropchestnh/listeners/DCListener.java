@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -26,24 +25,26 @@ public class DCListener implements Listener {
     }
     
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        /*
-        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
+    public void onPlayerInteract(PlayerInteractEvent event) {        
+        if (!dc.isInEditMode(event.getPlayer())) {
             return;
-        }*/
-        // These events simply exist for debugging purposes right now, left click adds dropchests, right click fills their inventory with whatever you're holding
-        if (event.getAction().equals((Action.LEFT_CLICK_BLOCK))) {
-            if (event.getClickedBlock().getType().equals(Material.CHEST)) {
-                dc.getDcHandler().addChest(event.getClickedBlock(), event.getPlayer());
-            }
         }
-        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
-            if (event.getClickedBlock().getType().equals(Material.CHEST)) {
-                ItemStack iss = dc.getDcHandler().addItem(event.getClickedBlock().getLocation(), event.getPlayer().getItemInHand());
-                if (iss != null) {
-                    dc.log(iss.toString());
-                }
-            }
+        
+        boolean done = false;
+        
+        // Left clicked on a chest
+        if ((event.getAction().equals(Action.LEFT_CLICK_BLOCK)) && event.getClickedBlock().getType().equals(Material.CHEST)) {
+            done = dc.getPlayerEditor(event.getPlayer()).leftClickEvent(event.getClickedBlock(), 
+                    event.getPlayer().getItemInHand().getType());
+            event.setCancelled(true);
+        }
+        
+        if (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+            done = dc.getPlayerEditor(event.getPlayer()).rightClickEvent();
+            event.setCancelled(true);
+        }
+        if (done) {
+            dc.removePlayerFromEditor(event.getPlayer());
         }
     }
     
