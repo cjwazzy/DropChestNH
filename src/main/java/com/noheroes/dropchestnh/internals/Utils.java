@@ -23,6 +23,7 @@ public class Utils {
     public static boolean hasPermission(CommandSender cs, String perm) {
         return true;
     }
+    
     // Temp set to op only
     public static boolean isAdmin(CommandSender cs) {
         return cs.isOp();
