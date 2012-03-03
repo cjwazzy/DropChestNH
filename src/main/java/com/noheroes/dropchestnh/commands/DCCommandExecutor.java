@@ -48,6 +48,12 @@ public class DCCommandExecutor implements CommandExecutor {
             else if (com.equalsIgnoreCase("suck")) {
                 cmd = new FilterCmd(sender, args, Filter.SUCK);
             }
+            else if (com.equalsIgnoreCase("remove") || com.equalsIgnoreCase("delete")) {
+                cmd = new RemoveChestCmd(sender, args);
+            }
+            else if (com.equalsIgnoreCase("list")) {
+                cmd = new ListCmd(sender, args);
+            }
             else {
                 cmd = new HelpCmd(sender, args);
             }

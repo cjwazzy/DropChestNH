@@ -13,7 +13,7 @@ public class Properties {
     private Properties () {}
     
     
-    
+    public static final int chestsPerPage = 5;
     
     // Permissions  
     public static final String createSuckPerm = "dropchest.create.suck";

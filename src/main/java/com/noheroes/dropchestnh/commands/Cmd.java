@@ -21,8 +21,8 @@ abstract public class Cmd {
     Player player;
     DropChestNH dc;
     
-    String permission = null;
-    int minArgs = 1;
+    String permission = null;   // null permission defaults to permitted
+    int minArgs = 1;    // With a value of 1 this will pass errorCheck() by default unless it is changed
     
     public Cmd(CommandSender cs, String args[]) {
         this.cs = cs;
@@ -32,7 +32,7 @@ abstract public class Cmd {
     
     protected void getPlayer() throws InsufficientPermissionsException {
         if (!(cs instanceof Player)) {
-            throw new InsufficientPermissionsException("Only players can add dropchests");
+            throw new InsufficientPermissionsException("Only players can use this command");
         }
         player = (Player)cs;
     }

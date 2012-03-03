@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 /**
  *
@@ -53,5 +54,10 @@ public class DCListener implements Listener {
         if (event.getBlock().getType().equals(Material.CHEST)) {
             dc.getDcHandler().doubleChestCheck(event.getBlock());
         }
+    }
+    
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        dc.removePlayerFromEditor(event.getPlayer());
     }
 }

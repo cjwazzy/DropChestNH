@@ -7,14 +7,15 @@ package com.noheroes.dropchestnh.internals;
 import com.noheroes.dropchestnh.DropChestNH;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -29,8 +30,8 @@ public class DropChestHandler {
     private static final HashMap<String, Integer> dcMapChestNameToID = new HashMap<String, Integer>();
     // Maps chest location to chest ID for easy lookup when a chest is referenced by location
     private static final HashMap<Location, Integer> dcMapLocationToID = new HashMap<Location, Integer>();
-    // Maps player name to a list of chest ID for easy lookup when finding all chests owned by a player, mostly for sake of admin information lookup
-    private static final HashMap<String, LinkedHashSet<Integer>> dcMapPlayerNameToID = new HashMap<String, LinkedHashSet<Integer>>();
+    // Maps player name to a list of chest ID for easy lookup when finding all chests owned by a player, mostly for sake of lists
+    private static final HashMap<String, LinkedList<Integer>> dcMapPlayerNameToID = new HashMap<String, LinkedList<Integer>>();
     private static int currentChestID = 1;
     private static Set<BlockFace> cardinalFaces = new LinkedHashSet<BlockFace>();
     static DropChestNH dc;
@@ -95,18 +96,20 @@ public class DropChestHandler {
             dcMapLocationToID.put(secondaryLocation, currentChestID);
         }
         // Add chest ID to list of chests owned by player
-        if (dcMapPlayerNameToID.containsKey(player.getName())) {
-            dcMapPlayerNameToID.get(player.getName()).add(currentChestID);
+        if (dcMapPlayerNameToID.containsKey(player.getName().toLowerCase())) {
+            dcMapPlayerNameToID.get(player.getName().toLowerCase()).offer(currentChestID);
+            // Sort the list in acending order
+            Collections.sort(dcMapPlayerNameToID.get(player.getName()));
         }
         else {
-            LinkedHashSet<Integer> playerList = new LinkedHashSet<Integer>();
-            playerList.add(currentChestID);
-            dcMapPlayerNameToID.put(player.getName(), playerList);
+            LinkedList<Integer> playerList = new LinkedList<Integer>();
+            playerList.offer(currentChestID);
+            dcMapPlayerNameToID.put(player.getName().toLowerCase(), playerList);
         }
         return true;
     }
     
-    // Owner or permission handling for removal should be done before calling this method
+    // Owner or permission handling for removal should be done before calling these methods
     public boolean removeChest(String identifier) {
         return removeChest(getChestID(identifier));
     }
@@ -129,7 +132,7 @@ public class DropChestHandler {
             dcMapLocationToID.remove(dcHashMap.get(chestID).getSecondaryLocation());
         }
         // Remove chest from player's list of owned chests
-        dcMapPlayerNameToID.get(dcHashMap.get(chestID).getOwner()).remove(chestID);
+        dcMapPlayerNameToID.get(dcHashMap.get(chestID).getOwner().toLowerCase()).remove(chestID);
         // Remove the chest from the hashmap
         dcHashMap.remove(chestID);
         return true;        
@@ -244,6 +247,8 @@ public class DropChestHandler {
         return updateFilter(mat, getChestID(identifier), filter);
     }
     
+    
+    
     public Material getMaterialFromString(String mat) {
         Material material;
         // Check if material is referenced by enum
@@ -334,6 +339,10 @@ public class DropChestHandler {
             return false;
         }
         return dcHashMap.containsKey(chestID);
+    }
+    
+    public LinkedList<Integer> getPlayerChestList(String playerName) {
+        return dcMapPlayerNameToID.get(playerName.toLowerCase());
     }
     
     // Checks which chest is primary.  Returns true if the order is correct (first parameter primary, second secondary) or false it should be reversed
