@@ -6,10 +6,15 @@ package com.noheroes.dropchestnh.commands;
 
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
+import com.noheroes.dropchestnh.internals.InventoryData;
 import com.noheroes.dropchestnh.internals.Properties;
 import com.noheroes.dropchestnh.internals.Utils;
+import com.noheroes.dropchestnh.internals.Utils.Filter;
 import java.util.LinkedList;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 /**
  *
@@ -19,6 +24,7 @@ public class ListCmd extends Cmd {
     
     public ListCmd(CommandSender cs, String args[]) {
         super (cs, args);
+        permission = Properties.basicAdmin;  // Not used for error check, only for admin part of this command
     }
     
     @Override
@@ -41,7 +47,7 @@ public class ListCmd extends Cmd {
                 return true;
             }
             // Second argument was not a page number -- Admin performing lookup on a player name
-            if(!Utils.isAdmin(cs)) {
+            if(!Utils.hasPermission(cs, permission)) {
                 // This exception message is on the assumption a player typo'd their page number, not attempted an admin lookup
                 throw new MissingOrIncorrectParametersException("That is not a valid page number");
             }
@@ -78,15 +84,59 @@ public class ListCmd extends Cmd {
         if (i >= chestList.size()) {
             throw new MissingOrIncorrectParametersException("This page does not exist");
         }
-        cs.sendMessage("Chests owned by player " + playerName);
+        // List pages numbers if there's more than one page worth of lines
+        if (chestList.size() > Properties.chestsPerPage) {
+            int pages;
+            pages = (int)Math.ceil((float)chestList.size() / Properties.chestsPerPage);
+            cs.sendMessage("Chests owned by player " + playerName + ". Page: " + pageNr + "/" + pages);
+        }
+        // Single page
+        else {
+            cs.sendMessage("Chests owned by player " + playerName);
+        }
+        String msg;
+        int chestID;
         // Loop through chests until correct number are displayed on page
         for ( ; i < (pageNr * Properties.chestsPerPage); i++) {
             // End of list
             if (i >= chestList.size())
                 break;            
-            
-            // TODO: Display useful information here, this is a placeholder
-            cs.sendMessage("Chest number: " + chestList.get(i));
+            chestID = chestList.get(i);
+            // No colors for console
+            if (cs instanceof ConsoleCommandSender) {
+                msg = "Chest #" + chestList.get(i);
+                if (dc.getDcHandler().getChestName(chestID) != null) {
+                    msg += " - " + dc.getDcHandler().getChestName(chestID);
+                }
+                Location loc = dc.getDcHandler().getChestLocation(chestID);
+                msg += " X:" + loc.getBlockX() + " Z:" + loc.getBlockZ() + " Y:" + loc.getBlockY();
+                for (Filter f : Filter.values()) {
+                    if (dc.getDcHandler().isFilterInUse(chestID, f)) {
+                        msg += " " + f.name().toString();
+                    }
+                }
+                InventoryData invData = dc.getDcHandler().getInventoryData(chestID);
+                msg += " Used Slots:" + invData.getFilledSlots() + "/" + invData.getTotalSlots();
+                msg += " Filled:" + invData.getPercentageUsed() + "%";
+            }
+            // Colors for players
+            else {
+                msg = ChatColor.AQUA + "Chest #" + chestList.get(i);
+                if (dc.getDcHandler().getChestName(chestID) != null) {
+                    msg += ChatColor.GREEN + " - " + dc.getDcHandler().getChestName(chestID);
+                }
+                Location loc = dc.getDcHandler().getChestLocation(chestID);
+                msg += ChatColor.BLUE + " X:" + loc.getBlockX() + " Z:" + loc.getBlockZ() + " Y:" + loc.getBlockY();
+                for (Filter f : Filter.values()) {
+                    if (dc.getDcHandler().isFilterInUse(chestID, f)) {
+                        msg += ChatColor.DARK_AQUA + " " + f.name().toString();
+                    }
+                }
+                InventoryData invData = dc.getDcHandler().getInventoryData(chestID);
+                msg += ChatColor.DARK_PURPLE + " Slots:" + invData.getFilledSlots() + "/" + invData.getTotalSlots();
+                msg += ChatColor.RED + " Filled:" + invData.getPercentageUsed() + "%";                
+            }
+            cs.sendMessage(msg);
         }
     }
     

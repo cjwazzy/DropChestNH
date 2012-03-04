@@ -19,6 +19,8 @@ public class Properties {
     public static final String createSuckPerm = "dropchest.create.suck";
     public static final String createPullPerm = "dropchest.create.pull";
     public static final String createPushPerm = "dropchest.create.push";
+    public static final String basicAdmin = "dropchest.admin.basic";    // Only permission to look at chests
+    public static final String fullAdmin = "dropchest.admin.full";      // All permissions
     
     public static final String createChestPerm = "dropchestCreatePerm";   // Not an actual permission, only use for internal permission handling, do not change
 }

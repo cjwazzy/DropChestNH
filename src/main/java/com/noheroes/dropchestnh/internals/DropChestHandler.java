@@ -7,10 +7,10 @@ package com.noheroes.dropchestnh.internals;
 import com.noheroes.dropchestnh.DropChestNH;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -44,16 +44,19 @@ public class DropChestHandler {
         cardinalFaces.add(BlockFace.WEST);
     }
     
-    public boolean addChest(Block chest, Player player) {
+    public boolean addChest(Block chest, Player player) throws MissingOrIncorrectParametersException {
         return addChest(chest, player, null);
     }
     
-    public boolean addChest(Block chest, Player player, String chestName) {
+    public boolean addChest(Block chest, Player player, String chestName) throws MissingOrIncorrectParametersException {
         if (!chest.getType().equals(Material.CHEST)) {
             return false;
         }
         if (dcMapLocationToID.containsKey(chest.getLocation())) {
-            return false;   // Chest is already a dropchest
+            throw new MissingOrIncorrectParametersException("That is already a dropchest");
+        }
+        if ((chestName != null) && dcMapChestNameToID.containsKey(chestName)) {
+            throw new MissingOrIncorrectParametersException("A chest with that name already exists");
         }
         
         Block adjacentChest = findAdjacentChest(chest);
@@ -98,8 +101,6 @@ public class DropChestHandler {
         // Add chest ID to list of chests owned by player
         if (dcMapPlayerNameToID.containsKey(player.getName().toLowerCase())) {
             dcMapPlayerNameToID.get(player.getName().toLowerCase()).offer(currentChestID);
-            // Sort the list in acending order
-            Collections.sort(dcMapPlayerNameToID.get(player.getName()));
         }
         else {
             LinkedList<Integer> playerList = new LinkedList<Integer>();
@@ -162,12 +163,10 @@ public class DropChestHandler {
         if (checkPrimaryChest(chest, adjacentChest)) {
             dcHashMap.get(chestID).setPrimaryLocation(chest.getLocation());
             dcHashMap.get(chestID).setSecondaryLocation(adjacentChest.getLocation());
-            dc.log("Primary changing");
         }
         else {
             // The primary chest remains the same and is already stored, no need to add it again
             dcHashMap.get(chestID).setSecondaryLocation(chest.getLocation());
-            dc.log("Primary remains");
         }
         return true;
     }
@@ -246,9 +245,7 @@ public class DropChestHandler {
     public boolean updateFilter(String mat, String identifier, Filter filter) throws MissingOrIncorrectParametersException {
         return updateFilter(mat, getChestID(identifier), filter);
     }
-    
-    
-    
+     
     public Material getMaterialFromString(String mat) {
         Material material;
         // Check if material is referenced by enum
@@ -343,6 +340,30 @@ public class DropChestHandler {
     
     public LinkedList<Integer> getPlayerChestList(String playerName) {
         return dcMapPlayerNameToID.get(playerName.toLowerCase());
+    }
+    
+    public String getChestName(Integer chestID) {
+        return dcHashMap.get(chestID).getName();
+    }
+    
+    public Location getChestLocation(Integer chestID) {
+        return dcHashMap.get(chestID).getPrimaryLocation();
+    }
+    
+    public boolean isFilterInUse(Integer chestID, Filter filter) {
+        return dcHashMap.get(chestID).isFilterInUse(filter);
+    }
+    
+    public InventoryData getInventoryData(Integer chestID) {
+        return dcHashMap.get(chestID).getInventoryData();
+    }
+    
+    public HashMap<String, Integer> getAllChestList() {
+        HashMap<String, Integer> playerList = new HashMap<String, Integer>();
+        for (Entry<String, LinkedList<Integer>> listEntry : dcMapPlayerNameToID.entrySet()) {
+            playerList.put(listEntry.getKey(), listEntry.getValue().size());
+        }
+        return playerList;
     }
     
     // Checks which chest is primary.  Returns true if the order is correct (first parameter primary, second secondary) or false it should be reversed

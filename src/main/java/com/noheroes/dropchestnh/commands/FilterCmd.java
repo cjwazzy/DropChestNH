@@ -37,6 +37,7 @@ public class FilterCmd extends Cmd {
         // No extra parameters -- Using interactive mode
         if (args.length == 1) {
             getPlayer();
+            player.sendMessage("Hit the dropchest with an item to add/remove it from the filter, right click when done");
             dc.addPlayerToEditor(player, EditMode.FILTER, filter);
             return true;
         }

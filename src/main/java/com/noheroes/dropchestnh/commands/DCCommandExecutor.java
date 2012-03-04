@@ -54,6 +54,9 @@ public class DCCommandExecutor implements CommandExecutor {
             else if (com.equalsIgnoreCase("list")) {
                 cmd = new ListCmd(sender, args);
             }
+            else if (com.equalsIgnoreCase("listall")) {
+                cmd = new ListAllCmd(sender, args);
+            }
             else {
                 cmd = new HelpCmd(sender, args);
             }

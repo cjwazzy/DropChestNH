@@ -51,21 +51,26 @@ public class DropChestEditor {
         switch(mode) {
             case ADD_CHEST:
                 // Add chest
-                if (dc.getDcHandler().addChest(block, player, chestName)) {
+                try {
+                    dc.getDcHandler().addChest(block, player, chestName);
                     if (chestName == null) {
                         player.sendMessage("Dropchest added");
                     }
                     else {
                         player.sendMessage("Dropchest with name " + chestName + " added");
                     }
-                    return true;
-                }
-                else {
-                    player.sendMessage("That is already a dropchest");
+                } catch (MissingOrIncorrectParametersException ex) {
+                    player.sendMessage(ex.getMessage());
+                } finally {
                     return true;
                 }
             case FILTER:
                 try {
+                    // Players can only edit their own chests unless they are an admin
+                    if ((!dc.getDcHandler().ownsChest(block.getLocation(), player)) && !Utils.isAdmin(player)) {
+                        player.sendMessage("You cannot edit the filter for a chest that is not yours");
+                        return false;
+                    }
                     if (dc.getDcHandler().updateFilter(mat, block.getLocation(), filter)) {
                         player.sendMessage(mat.toString() + " has been added to the " + filter.toString() + " filter");
                         return false;

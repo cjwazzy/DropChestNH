@@ -4,7 +4,6 @@
  */
 package com.noheroes.dropchestnh.internals;
 
-import com.noheroes.dropchestnh.DropChestNH;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -12,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -112,6 +112,45 @@ public class DropChestObj {
     
     public boolean filterContains(Integer matID, Filter filter) {
         return getFilter(filter).contains(matID);
+    }
+    
+    public boolean isFilterInUse(Filter filter) {
+        switch(filter) {
+            case SUCK:
+                return !suckFilter.isEmpty();
+            case PUSH:
+                return !pushFilter.isEmpty();
+            case PULL:
+                return !pullFilter.isEmpty();
+            default:
+                return false;
+        }
+    }
+    
+    public InventoryData getInventoryData() {
+        return getInvData(getPrimaryInventory()).add(getInvData(getSecondaryInventory()));
+    }
+    
+    private InventoryData getInvData(Inventory inv) {
+        if (inv == null) {
+            return null;
+        }
+        
+        int filledSlots = 0;
+        int freeSlots = 0;
+        int usedSpace = 0;
+        ItemStack is;
+        for (int i = 0; i < inv.getSize(); i++) {
+            is = inv.getItem(i);
+            if ((is == null) || (is.getAmount() == 0)) {
+                freeSlots++;
+            }
+            else {
+                filledSlots++;
+                usedSpace += is.getAmount();
+            }
+        }
+        return new InventoryData(filledSlots, freeSlots, usedSpace);
     }
 
     private Set<Integer> getFilter(Filter filter) {
