@@ -26,12 +26,14 @@ public class AddChestCmd extends Cmd {
         getPlayer();
         errorCheck();
         if (args.length > 1) {
-            cs.sendMessage("Left click on the chest you would like to add as dropchest or right click to cancel");
-            dc.addPlayerToEditor(player, EditMode.ADD_CHEST, args[1]);
+            if (dc.addPlayerToEditor(player, EditMode.ADD_CHEST, args[1])) {
+                cs.sendMessage("Left click on the chest you would like to add as dropchest or right click to cancel");
+            }
         }
         else {
-            cs.sendMessage("Left click on the chest you would like to add as dropchest or right click to cancel");
-            dc.addPlayerToEditor(player, EditMode.ADD_CHEST);
+            if (dc.addPlayerToEditor(player, EditMode.ADD_CHEST)) {
+                cs.sendMessage("Left click on the chest you would like to add as dropchest or right click to cancel");            
+            }
         }
         return true;
     }

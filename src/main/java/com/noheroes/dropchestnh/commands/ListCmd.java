@@ -6,15 +6,10 @@ package com.noheroes.dropchestnh.commands;
 
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
-import com.noheroes.dropchestnh.internals.InventoryData;
 import com.noheroes.dropchestnh.internals.Properties;
 import com.noheroes.dropchestnh.internals.Utils;
-import com.noheroes.dropchestnh.internals.Utils.Filter;
 import java.util.LinkedList;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 
 /**
  *
@@ -102,40 +97,8 @@ public class ListCmd extends Cmd {
             if (i >= chestList.size())
                 break;            
             chestID = chestList.get(i);
-            // No colors for console
-            if (cs instanceof ConsoleCommandSender) {
-                msg = "Chest #" + chestList.get(i);
-                if (dc.getDcHandler().getChestName(chestID) != null) {
-                    msg += " - " + dc.getDcHandler().getChestName(chestID);
-                }
-                Location loc = dc.getDcHandler().getChestLocation(chestID);
-                msg += " X:" + loc.getBlockX() + " Z:" + loc.getBlockZ() + " Y:" + loc.getBlockY();
-                for (Filter f : Filter.values()) {
-                    if (dc.getDcHandler().isFilterInUse(chestID, f)) {
-                        msg += " " + f.name().toString();
-                    }
-                }
-                InventoryData invData = dc.getDcHandler().getInventoryData(chestID);
-                msg += " Used Slots:" + invData.getFilledSlots() + "/" + invData.getTotalSlots();
-                msg += " Filled:" + invData.getPercentageUsed() + "%";
-            }
-            // Colors for players
-            else {
-                msg = ChatColor.AQUA + "Chest #" + chestList.get(i);
-                if (dc.getDcHandler().getChestName(chestID) != null) {
-                    msg += ChatColor.GREEN + " - " + dc.getDcHandler().getChestName(chestID);
-                }
-                Location loc = dc.getDcHandler().getChestLocation(chestID);
-                msg += ChatColor.BLUE + " X:" + loc.getBlockX() + " Z:" + loc.getBlockZ() + " Y:" + loc.getBlockY();
-                for (Filter f : Filter.values()) {
-                    if (dc.getDcHandler().isFilterInUse(chestID, f)) {
-                        msg += ChatColor.DARK_AQUA + " " + f.name().toString();
-                    }
-                }
-                InventoryData invData = dc.getDcHandler().getInventoryData(chestID);
-                msg += ChatColor.DARK_PURPLE + " Slots:" + invData.getFilledSlots() + "/" + invData.getTotalSlots();
-                msg += ChatColor.RED + " Filled:" + invData.getPercentageUsed() + "%";                
-            }
+            // Create list info string
+            msg = Utils.getChestInfoMsg(cs, chestID);
             cs.sendMessage(msg);
         }
     }

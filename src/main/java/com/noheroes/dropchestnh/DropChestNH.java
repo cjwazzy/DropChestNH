@@ -59,28 +59,31 @@ public class DropChestNH extends JavaPlugin {
         return playerEditMap.get(player);
     }
     
-    public void addPlayerToEditor(Player player, EditMode mode) {
+    public boolean addPlayerToEditor(Player player, EditMode mode) {
         if (checkEditMode(player)) {
-            return;
+            return false;
         }
         DropChestEditor editor = new DropChestEditor(player, mode);
         playerEditMap.put(player, editor);
+        return true;
     }
     
-    public void addPlayerToEditor(Player player, EditMode mode, String chestName) {
+    public boolean addPlayerToEditor(Player player, EditMode mode, String chestName) {
         if (checkEditMode(player)) {
-            return;
+            return false;
         }
         DropChestEditor editor = new DropChestEditor(player, mode, chestName);
         playerEditMap.put(player, editor);
+        return true;
     }
     
-    public void addPlayerToEditor(Player player, EditMode mode, Filter filter) {
+    public boolean addPlayerToEditor(Player player, EditMode mode, Filter filter) {
         if (checkEditMode(player)) {
-            return;
+            return false;
         }
         DropChestEditor editor = new DropChestEditor(player, mode, filter);
         playerEditMap.put(player, editor);
+        return true;
     }
     
     public void removePlayerFromEditor(Player player) {

@@ -71,6 +71,10 @@ public class DropChestEditor {
                         player.sendMessage("You cannot edit the filter for a chest that is not yours");
                         return false;
                     }
+                    // Clicked chest without item in hand
+                    if (mat.equals(Material.AIR)) {
+                        return false;
+                    }
                     if (dc.getDcHandler().updateFilter(mat, block.getLocation(), filter)) {
                         player.sendMessage(mat.toString() + " has been added to the " + filter.toString() + " filter");
                         return false;
@@ -84,6 +88,25 @@ public class DropChestEditor {
                     player.sendMessage(ex.getMessage());
                     return false;
                 }
+            case INFO:
+                // Player needs to own the chest or have basic admin permission to look up information about it
+                if ((!dc.getDcHandler().ownsChest(block.getLocation(), player)) && !Utils.hasPermission(player, Properties.basicAdmin)) {
+                    player.sendMessage("This is not your chest");
+                    return true;
+                }
+                if (!dc.getDcHandler().chestExists(block.getLocation())) {
+                    player.sendMessage("This is not a dropchest");
+                    return true;
+                }
+                String msg;
+                Integer chestID = dc.getDcHandler().getChestID(block.getLocation());
+                msg = Utils.getChestInfoMsg(player, chestID);
+                player.sendMessage(msg);
+                for (Filter f: Filter.values()) {
+                    msg = Utils.getChestFilterInfoMsg(player, chestID, f);
+                    player.sendMessage(msg);
+                }
+                return true;
         }
         return false;
     }
@@ -97,6 +120,8 @@ public class DropChestEditor {
             case FILTER:
                 player.sendMessage("Finished editing filter");
                 return true;
+            case INFO:
+                player.sendMessage("Cancelled chest info lookup");
             default:
                 return true;
         }

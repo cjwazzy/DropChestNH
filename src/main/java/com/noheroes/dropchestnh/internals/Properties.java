@@ -4,6 +4,8 @@
  */
 package com.noheroes.dropchestnh.internals;
 
+import org.bukkit.ChatColor;
+
 /**
  *
  * @author PIETER
@@ -12,6 +14,13 @@ public class Properties {
    
     private Properties () {}
     
+    // Colors
+    public static final ChatColor chestIDColor = ChatColor.AQUA;
+    public static final ChatColor chestNameColor = ChatColor.GREEN;
+    public static final ChatColor chestLocColor = ChatColor.BLUE;
+    public static final ChatColor chestFilterColor = ChatColor.DARK_AQUA;
+    public static final ChatColor chestSlotsColor = ChatColor.DARK_PURPLE;
+    public static final ChatColor chestFilledColor = ChatColor.RED;
     
     public static final int chestsPerPage = 5;
     

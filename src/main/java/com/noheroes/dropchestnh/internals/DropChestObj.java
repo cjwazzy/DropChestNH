@@ -26,6 +26,8 @@ public class DropChestObj {
     private Set<Integer> suckFilter;
     private Set<Integer> pullFilter;
     private Set<Integer> pushFilter;
+    private int chestSuckDistance;
+    private int chestSuckHeight;
     
     
     public DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation, Location secondaryLocation) {
@@ -38,6 +40,8 @@ public class DropChestObj {
         this.suckFilter = new LinkedHashSet<Integer>();
         this.pullFilter = new LinkedHashSet<Integer>();
         this.pushFilter = new LinkedHashSet<Integer>();
+        this.chestSuckDistance = 0;
+        this.chestSuckHeight = 0;
     }
     
     public DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation) {
@@ -131,6 +135,27 @@ public class DropChestObj {
         return getInvData(getPrimaryInventory()).add(getInvData(getSecondaryInventory()));
     }
     
+    public Set<Integer> getFilter(Filter filter) {
+        switch(filter) {
+            case SUCK: 
+                return suckFilter;
+            case PUSH:
+                return pushFilter;
+            case PULL:
+                return pullFilter;
+            default:
+                return null;
+        }
+    } 
+    
+    public int getSuckDistance() {
+        return chestSuckDistance;
+    }
+    
+    public int getSuckHeight() {
+        return chestSuckHeight;
+    }
+
     private InventoryData getInvData(Inventory inv) {
         if (inv == null) {
             return null;
@@ -151,18 +176,5 @@ public class DropChestObj {
             }
         }
         return new InventoryData(filledSlots, freeSlots, usedSpace);
-    }
-
-    private Set<Integer> getFilter(Filter filter) {
-        switch(filter) {
-            case SUCK: 
-                return suckFilter;
-            case PUSH:
-                return pushFilter;
-            case PULL:
-                return pullFilter;
-            default:
-                return null;
-        }
     }
 }

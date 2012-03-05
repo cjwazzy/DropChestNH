@@ -57,6 +57,12 @@ public class DCCommandExecutor implements CommandExecutor {
             else if (com.equalsIgnoreCase("listall")) {
                 cmd = new ListAllCmd(sender, args);
             }
+            else if (com.equalsIgnoreCase("info")) {
+                cmd = new InfoCmd(sender, args);
+            }
+            else if (com.equalsIgnoreCase("setdistance") || com.equalsIgnoreCase("sd")) {
+                cmd = new SetDistanceCmd(sender, args);
+            }
             else {
                 cmd = new HelpCmd(sender, args);
             }

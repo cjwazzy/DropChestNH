@@ -32,6 +32,8 @@ public class DropChestHandler {
     private static final HashMap<Location, Integer> dcMapLocationToID = new HashMap<Location, Integer>();
     // Maps player name to a list of chest ID for easy lookup when finding all chests owned by a player, mostly for sake of lists
     private static final HashMap<String, LinkedList<Integer>> dcMapPlayerNameToID = new HashMap<String, LinkedList<Integer>>();
+    // This hashmap maps all suck locations to the corresponding chest ID's
+    private static final HashMap<Location, LinkedList<Integer>> dcMapSuckLocationToID = new HashMap<Location, LinkedList<Integer>>();
     private static int currentChestID = 1;
     private static Set<BlockFace> cardinalFaces = new LinkedHashSet<BlockFace>();
     static DropChestNH dc;
@@ -330,12 +332,20 @@ public class DropChestHandler {
         return chestID;
     }
     
+    public Integer getChestID(Location location) {
+        return dcMapLocationToID.get(location);
+    }
+    
     public boolean chestExists(String identifier) {
         Integer chestID = getChestID(identifier);
         if (chestID == null) {
             return false;
         }
         return dcHashMap.containsKey(chestID);
+    }
+    
+    public boolean chestExists(Location location) {
+        return dcMapLocationToID.containsKey(location);
     }
     
     public LinkedList<Integer> getPlayerChestList(String playerName) {
@@ -366,6 +376,45 @@ public class DropChestHandler {
         return playerList;
     }
     
+    public Set<Integer> getFilter(Integer chestID, Filter filter) {
+        if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
+            return null;
+        }
+        return dcHashMap.get(chestID).getFilter(filter);
+    }
+    
+    public void setSuckDistance(Integer chestID, int newDistance) {
+        if (chestID == null) {
+            return;
+        }
+        int oldDistance = getChest(chestID).getSuckDistance();
+        int height = getChest(chestID).getSuckHeight();
+        // Negative distance is not allowed -- TODO: Move this to command handler to display error
+        if (newDistance < 0) {
+            return;
+        }        
+        // Distance was not changed
+        if (newDistance == oldDistance) {
+            return;
+        }
+        // Chest suck distance is increasing
+        if (newDistance > oldDistance) {
+            // Create the box in which the chest filters
+            FilterBox fb = new FilterBox(newDistance, height, getChest(chestID).getPrimaryLocation());
+            Location loc;
+            // Add all locations in the box to the hashmap
+            while (fb.hasNext()) {
+                loc = fb.next();
+                mapChestToLoc(chestID, loc);
+            }
+        }
+        // TODO: oldDistance > newDistance case
+    }
+    
+    private void mapChestToLoc(Integer chestID, Location location) {
+        // TODO: implement method
+    }
+    
     // Checks which chest is primary.  Returns true if the order is correct (first parameter primary, second secondary) or false it should be reversed
     // The primary chest holds the top 3 rows of the inventory and is always the north or east most chest.
     private boolean checkPrimaryChest(Block primaryChest, Block secondaryChest) {
@@ -381,5 +430,9 @@ public class DropChestHandler {
             }
         }
         return null;
+    }
+    
+    private DropChestObj getChest(Integer chestID) {
+        return dcHashMap.get(chestID);
     }
 }
