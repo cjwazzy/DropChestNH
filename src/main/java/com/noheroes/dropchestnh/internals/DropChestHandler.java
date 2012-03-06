@@ -17,6 +17,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.StorageMinecart;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -24,11 +26,7 @@ import org.bukkit.inventory.ItemStack;
  * @author PIETER
  */
 
-
-    // TODO: Chest removal needs to clean locations from suck filter hashmap
-    // TODO: Issues with primary chest changing due to double chest after distance has been set up.
-    // TODO: Event to prevent scs items from being sucked up
-
+    // TODO: Fix updateFilter (2 master methods)
 
 public class DropChestHandler {
     // Stores all dropchests using a unique ID as key
@@ -41,6 +39,8 @@ public class DropChestHandler {
     private static final HashMap<String, LinkedList<Integer>> dcMapPlayerNameToID = new HashMap<String, LinkedList<Integer>>();
     // This hashmap maps all suck locations to the corresponding chest ID's
     private static final HashMap<Location, LinkedHashSet<Integer>> dcMapSuckLocationToID = new HashMap<Location, LinkedHashSet<Integer>>();
+    // This hashmap maps push/pull locations to chest ID's
+    private static final HashMap<Location, LinkedHashSet<Integer>> dcMapPullLocationToID = new HashMap<Location, LinkedHashSet<Integer>>();
     private static int currentChestID = 1;
     private static Set<BlockFace> cardinalFaces = new LinkedHashSet<BlockFace>();
     static DropChestNH dc;
@@ -125,7 +125,12 @@ public class DropChestHandler {
     }
     
     public boolean removeChest(Location location) {
-        return removeChest(dcMapLocationToID.get(location));
+        if (dcMapLocationToID.containsKey(location)) {
+            return removeChest(dcMapLocationToID.get(location));
+        }
+        else {
+            return false;
+        }
     }
     
     public boolean removeChest (Integer chestID) {
@@ -143,6 +148,13 @@ public class DropChestHandler {
         }
         // Remove chest from player's list of owned chests
         dcMapPlayerNameToID.get(dcHashMap.get(chestID).getOwner().toLowerCase()).remove(chestID);
+        // Remove all locations associated with this chest's suck area
+        FilterBox fb = new FilterBox(getChest(chestID).getSuckDistance(), getChest(chestID).getSuckHeight(), getChest(chestID).getOriginalLocation());
+        while (fb.hasNext()) {
+            removeLocFromMap(chestID, fb.next(), Filter.SUCK);
+        }
+        // Remove all locations associated with this chest's push/pull area
+        removeChestFromPullMap(chestID);
         // Remove the chest from the hashmap
         dcHashMap.remove(chestID);
         return true;        
@@ -167,7 +179,6 @@ public class DropChestHandler {
         }
         
         dcMapLocationToID.put(chest.getLocation(), chestID);
-        //DropChestObj dropChest = dcHashMap.get(chestID);
         // Update the locations for dropchest object
         if (checkPrimaryChest(chest, adjacentChest)) {
             dcHashMap.get(chestID).setPrimaryLocation(chest.getLocation());
@@ -176,6 +187,10 @@ public class DropChestHandler {
         else {
             // The primary chest remains the same and is already stored, no need to add it again
             dcHashMap.get(chestID).setSecondaryLocation(chest.getLocation());
+        }
+        // If the chest uses a push or pull filter update the push/pull map
+        if (isFilterInUse(chestID, Filter.PULL) || isFilterInUse(chestID, Filter.PUSH)) {
+            addChestToPullMap(chestID);
         }
         return true;
     }
@@ -241,6 +256,10 @@ public class DropChestHandler {
             throw new MissingOrIncorrectParametersException("Material " + mat + " does not exist");
         }
         else {
+            // If push or pull filter is used add to push/pull minecart location map
+            if ((filter == Filter.PULL) || (filter == Filter.PUSH)) {
+                addChestToPullMap(chestID);
+            }
             return dcHashMap.get(chestID).updateFilter(material.getId(), filter);
         }
     }
@@ -414,7 +433,7 @@ public class DropChestHandler {
             while (fb.hasNext()) {
                 loc = fb.next();
                 // Any locs that were already adding to the map previously will be skipped by the method
-                addLocToMap(chestID, loc);
+                addLocToMap(chestID, loc, Filter.SUCK);
             }
         }
         // Chest suck distance is decreasing
@@ -425,7 +444,7 @@ public class DropChestHandler {
                 loc = fb.next();
                 // Remove any locations that are not within range of the new filter box
                 if (!checkDistance(newDistance, height, loc, getChest(chestID).getPrimaryLocation())) {
-                    removeLocFromMap(chestID, loc);
+                    removeLocFromMap(chestID, loc, Filter.SUCK);
                 }
             }
         }
@@ -454,7 +473,7 @@ public class DropChestHandler {
             while (fb.hasNext()) {
                 loc = fb.next();
                 // Any locs that were already adding to the map previously will be skipped by the method
-                addLocToMap(chestID, loc);
+                addLocToMap(chestID, loc, Filter.SUCK);
             }
         }
         // Chest suck height is decreasing
@@ -464,7 +483,7 @@ public class DropChestHandler {
             while (fb.hasNext()) {
                 loc = fb.next();
                 if (!checkDistance(distance, newHeight, loc, getChest(chestID).getPrimaryLocation())) {
-                    removeLocFromMap(chestID, loc);
+                    removeLocFromMap(chestID, loc, Filter.SUCK);
                 }                
             }
         }
@@ -493,32 +512,60 @@ public class DropChestHandler {
         return iss;
     }
     
-    private void addLocToMap(Integer chestID, Location location) {
+    public void minecartMovement(StorageMinecart cart) {
+        if (cart == null) {
+            return;
+        }
+        Location cartLoc = roundLoc(cart.getLocation());
+        if (dcMapPullLocationToID.containsKey(cartLoc)) {
+            LinkedHashSet<Integer> chestList = dcMapPullLocationToID.get(cartLoc);
+            for (Integer chestID : chestList) {
+                minecartPassDropChest(chestID, cart);
+            }
+        }
+        
+    }
+    
+    private void addLocToMap(Integer chestID, Location location, Filter filter) {
         //location.getBlock().setType(Material.GLASS);          // DEBUG -- Easily allows visualization of area covered
         
+        HashMap<Location, LinkedHashSet<Integer>> locMap;
+        if (filter == Filter.SUCK) {
+            locMap = dcMapSuckLocationToID;
+        }
+        else {
+            locMap = dcMapPullLocationToID;
+        }
         // Location is already mapped, add chest to the set
-        if (dcMapSuckLocationToID.containsKey(location)) {
-            dcMapSuckLocationToID.get(location).add(chestID);
+        if (locMap.containsKey(location)) {
+            locMap.get(location).add(chestID);
         }
         // Location is not mapped yet, create new set and add chest to it
         else {
             LinkedHashSet<Integer> chestSet = new LinkedHashSet<Integer>();
             chestSet.add(chestID);
-            dcMapSuckLocationToID.put(location, chestSet);
+            locMap.put(location, chestSet);
         }
     }
     
-    private void removeLocFromMap(Integer chestID, Location location) {
+    private void removeLocFromMap(Integer chestID, Location location, Filter filter) {
         //location.getBlock().setType(Material.AIR);            // DEBUG -- Easily allows visualization of area covered
-        
-        if (!dcMapSuckLocationToID.containsKey(location)) {
+
+        HashMap<Location, LinkedHashSet<Integer>> locMap;
+        if (filter == Filter.SUCK) {
+            locMap = dcMapSuckLocationToID;
+        }
+        else {
+            locMap = dcMapPullLocationToID;
+        }
+        if (!locMap.containsKey(location)) {
             return;
         }
         // Remove chest ID from the list
-        dcMapSuckLocationToID.get(location).remove(chestID);
+        locMap.get(location).remove(chestID);
         // If set is empty, removing location mapping
-        if (dcMapSuckLocationToID.get(location).isEmpty()) {
-            dcMapSuckLocationToID.remove(location);
+        if (locMap.get(location).isEmpty()) {
+            locMap.remove(location);
         }
     }
     
@@ -561,5 +608,56 @@ public class DropChestHandler {
     
     private boolean chestFilterContains(Integer chestID, Material mat, Filter filter) {
         return (getChest(chestID).filterContains(mat.getId(), filter));
+    }
+    
+    private void addChestToPullMap(Integer chestID) {
+        // Add to push/pull loc map for primary chest
+        FilterBox fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getPrimaryLocation());
+        while (fb.hasNext()) {
+            addLocToMap(chestID, fb.next(), Filter.PULL);
+        }
+        // Add to push/pull loc map for secondary chest if it exists
+        if (getChest(chestID).getSecondaryLocation() != null) {
+            fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getSecondaryLocation());
+            while (fb.hasNext()) {
+                addLocToMap(chestID, fb.next(), Filter.PULL);
+            }
+        }        
+    }
+    
+    private void removeChestFromPullMap(Integer chestID) {
+        FilterBox fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getPrimaryLocation());
+        while (fb.hasNext()) {
+            removeLocFromMap(chestID, fb.next(), Filter.PULL);
+        }
+        if (getChest(chestID).getSecondaryLocation() != null) {
+            fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getSecondaryLocation());
+            while (fb.hasNext()) {
+                removeLocFromMap(chestID, fb.next(), Filter.PULL);
+            }
+        }
+    }
+    
+    private void minecartPassDropChest(Integer chestID, StorageMinecart cart) {
+        Inventory cartInv = cart.getInventory();
+        ItemStack is;
+        // Pull filter code
+        for (int i = 0; i < cartInv.getSize(); i++) {
+            is = cartInv.getItem(i);
+            // No item in that slot, move on to next slot
+            if ((is == null) || (is.getAmount() == 0))
+                continue;
+            // If this item is part of the filter we add it to the dropchest
+            if (getChest(chestID).filterContains(is.getTypeId(), Filter.PULL)) {
+                ItemStack leftover = addItem(chestID, is);
+                if (leftover == null) {
+                    cartInv.setItem(i, null);
+                }
+                else {
+                    cartInv.setItem(i, leftover);
+                }
+            }
+        }
+        
     }
 }

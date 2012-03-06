@@ -19,6 +19,8 @@ public class Properties {
     
     public static int itemLoopDelay = 20;
     
+    public static int minecartFilterDistance = 1;
+    
     // Colors
     public static final ChatColor chestIDColor = ChatColor.AQUA;
     public static final ChatColor chestNameColor = ChatColor.GREEN;

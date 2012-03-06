@@ -6,12 +6,15 @@ package com.noheroes.dropchestnh.listeners;
 
 import com.noheroes.dropchestnh.DropChestNH;
 import org.bukkit.Material;
+import org.bukkit.entity.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 
 /**
  *
@@ -59,5 +62,21 @@ public class DCListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         dc.removePlayerFromEditor(event.getPlayer());
+    }
+    
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (event.getBlock().getType().equals((Material.CHEST))) {
+            if (dc.getDcHandler().removeChest(event.getBlock().getLocation())) {
+                event.getPlayer().sendMessage("Dropchest removed");
+            }
+        }
+    }
+    
+    @EventHandler
+    public void onVehicleMove(VehicleMoveEvent event) {
+        if (event.getVehicle() instanceof StorageMinecart) {
+            dc.getDcHandler().minecartMovement((StorageMinecart)event.getVehicle());
+        }
     }
 }

@@ -20,6 +20,7 @@ import org.bukkit.inventory.ItemStack;
 public class DropChestObj {
     private Location primaryLocation;
     private Location secondaryLocation;
+    private Location originalLocation;
     private int chestID;
     private String chestName;
     private String ownerName;
@@ -33,6 +34,7 @@ public class DropChestObj {
     protected DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation, Location secondaryLocation) {
 
         this.primaryLocation = primaryLocation;
+        this.originalLocation = primaryLocation;
         this.secondaryLocation = secondaryLocation;
         this.chestName = chestName;
         this.ownerName = ownerName;
@@ -54,6 +56,10 @@ public class DropChestObj {
     
     protected DropChestObj(int chestID, String ownerName, Location primaryLocation) {
         this(chestID, ownerName, null, primaryLocation, null);
+    }
+    
+    protected Location getOriginalLocation() {
+        return originalLocation;
     }
     
     protected Location getPrimaryLocation() {
