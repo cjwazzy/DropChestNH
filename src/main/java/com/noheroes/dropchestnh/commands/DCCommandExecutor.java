@@ -63,6 +63,9 @@ public class DCCommandExecutor implements CommandExecutor {
             else if (com.equalsIgnoreCase("setdistance") || com.equalsIgnoreCase("sd")) {
                 cmd = new SetDistanceCmd(sender, args);
             }
+            else if (com.equalsIgnoreCase("setheight") || com.equalsIgnoreCase("sh")) {
+                cmd = new SetHeightCmd(sender, args);
+            }
             else {
                 cmd = new HelpCmd(sender, args);
             }

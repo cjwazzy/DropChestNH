@@ -19,7 +19,6 @@ public class InfoCmd extends Cmd {
     
     public InfoCmd(CommandSender cs, String args[]) {
         super(cs, args);
-        permission = Properties.basicAdmin;   // Not used for error check, only for admin part of this command
     }
     
     public boolean execute() throws InsufficientPermissionsException, MissingOrIncorrectParametersException {
@@ -32,16 +31,9 @@ public class InfoCmd extends Cmd {
         }
         if (args.length > 1) {
             // Check if dropchest exists
-            if (!dc.getDcHandler().chestExists(args[1])) {
-                throw new MissingOrIncorrectParametersException("That dropchest does not exist");
-            }
+            chestExistCheck(args[1]);
             // Check if sender has basic admin permissions or owns the chest
-            if (!Utils.hasPermission(cs, Properties.basicAdmin)) {
-                getPlayer();
-                if (!dc.getDcHandler().ownsChest(args[1], player)) {
-                    throw new InsufficientPermissionsException("That is not your dropchest");
-                }
-            }
+            ownershipCheck(args[1], Properties.basicAdmin);
             Integer chestID = dc.getDcHandler().getChestID(args[1]);
             String msg;
             // Display basis chest info

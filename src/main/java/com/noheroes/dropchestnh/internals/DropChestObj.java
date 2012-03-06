@@ -30,7 +30,7 @@ public class DropChestObj {
     private int chestSuckHeight;
     
     
-    public DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation, Location secondaryLocation) {
+    protected DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation, Location secondaryLocation) {
 
         this.primaryLocation = primaryLocation;
         this.secondaryLocation = secondaryLocation;
@@ -44,56 +44,56 @@ public class DropChestObj {
         this.chestSuckHeight = 0;
     }
     
-    public DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation) {
+    protected DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation) {
         this(chestID, ownerName, chestName, primaryLocation, null);
     }
     
-    public DropChestObj(int chestID, String ownerName, Location primaryLocation, Location secondaryLocation) {
+    protected DropChestObj(int chestID, String ownerName, Location primaryLocation, Location secondaryLocation) {
         this(chestID, ownerName, null, primaryLocation, secondaryLocation);
     }
     
-    public DropChestObj(int chestID, String ownerName, Location primaryLocation) {
+    protected DropChestObj(int chestID, String ownerName, Location primaryLocation) {
         this(chestID, ownerName, null, primaryLocation, null);
     }
     
-    public Location getPrimaryLocation() {
+    protected Location getPrimaryLocation() {
         return primaryLocation;
     }
     
-    public Location getSecondaryLocation() {
+    protected Location getSecondaryLocation() {
         return secondaryLocation;
     }
     
-    public Inventory getPrimaryInventory() {
+    protected Inventory getPrimaryInventory() {
         return ((primaryLocation == null) ? null : ((Chest)primaryLocation.getBlock().getState()).getInventory());
     }
     
-    public Inventory getSecondaryInventory() {
+    protected Inventory getSecondaryInventory() {
         return ((secondaryLocation == null) ? null : ((Chest)secondaryLocation.getBlock().getState()).getInventory());
     }
     
-    public String getName() {
+    protected String getName() {
         return chestName;
     }
     
-    public String getOwner() {
+    protected String getOwner() {
         return ownerName;
     }
     
-    public int getID() {
+    protected int getID() {
         return chestID;
     }
     
-    public void setPrimaryLocation(Location location) {
+    protected void setPrimaryLocation(Location location) {
         primaryLocation = location;
     }
     
-    public void setSecondaryLocation(Location location) {
+    protected void setSecondaryLocation(Location location) {
         secondaryLocation = location;
     }
     
     // Adds the material to the list if it's not present and returns true, removes the material if it's on the list and returns false
-    public boolean updateFilter(Integer MatID, Filter filter) {
+    protected boolean updateFilter(Integer MatID, Filter filter) {
         if (getFilter(filter).contains(MatID)) {
             getFilter(filter).remove(MatID);
             return false;
@@ -104,21 +104,21 @@ public class DropChestObj {
         }
     }
     
-    public void clearFilter(Filter filter) {
+    protected void clearFilter(Filter filter) {
         getFilter(filter).clear();
     }
     
-    public void addAllFilter(Filter filter) {
+    protected void addAllFilter(Filter filter) {
         for (Material mat : Material.values()) {
             getFilter(filter).add(mat.getId());
         }
     }
     
-    public boolean filterContains(Integer matID, Filter filter) {
+    protected boolean filterContains(Integer matID, Filter filter) {
         return getFilter(filter).contains(matID);
     }
     
-    public boolean isFilterInUse(Filter filter) {
+    protected boolean isFilterInUse(Filter filter) {
         switch(filter) {
             case SUCK:
                 return !suckFilter.isEmpty();
@@ -131,11 +131,11 @@ public class DropChestObj {
         }
     }
     
-    public InventoryData getInventoryData() {
+    protected InventoryData getInventoryData() {
         return getInvData(getPrimaryInventory()).add(getInvData(getSecondaryInventory()));
     }
     
-    public Set<Integer> getFilter(Filter filter) {
+    protected Set<Integer> getFilter(Filter filter) {
         switch(filter) {
             case SUCK: 
                 return suckFilter;
@@ -148,12 +148,22 @@ public class DropChestObj {
         }
     } 
     
-    public int getSuckDistance() {
+    protected int getSuckDistance() {
         return chestSuckDistance;
     }
     
-    public int getSuckHeight() {
+    protected void setSuckDistance(int suckDistance) {
+        if (suckDistance >= 0)
+            this.chestSuckDistance = suckDistance;
+    }
+    
+    protected int getSuckHeight() {
         return chestSuckHeight;
+    }
+    
+    protected void setSuckHeight(int suckHeight) {
+        if (suckHeight >= 0)
+            this.chestSuckHeight = suckHeight;
     }
 
     private InventoryData getInvData(Inventory inv) {

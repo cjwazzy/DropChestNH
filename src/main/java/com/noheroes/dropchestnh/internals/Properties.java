@@ -10,9 +10,14 @@ import org.bukkit.ChatColor;
  *
  * @author PIETER
  */
-public class Properties {
-   
+public class Properties {  
     private Properties () {}
+    
+    
+    public static int maxDistance = 6;      // TODO: CONFIG DRIVEN
+    public static int maxHeight = 3;        // TODO: CONFIG DRIVEN
+    
+    public static int itemLoopDelay = 20;
     
     // Colors
     public static final ChatColor chestIDColor = ChatColor.AQUA;

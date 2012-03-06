@@ -23,6 +23,13 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author PIETER
  */
+
+
+    // TODO: Chest removal needs to clean locations from suck filter hashmap
+    // TODO: Issues with primary chest changing due to double chest after distance has been set up.
+    // TODO: Event to prevent scs items from being sucked up
+
+
 public class DropChestHandler {
     // Stores all dropchests using a unique ID as key
     private static final HashMap<Integer, DropChestObj> dcHashMap = new HashMap<Integer, DropChestObj>();
@@ -33,7 +40,7 @@ public class DropChestHandler {
     // Maps player name to a list of chest ID for easy lookup when finding all chests owned by a player, mostly for sake of lists
     private static final HashMap<String, LinkedList<Integer>> dcMapPlayerNameToID = new HashMap<String, LinkedList<Integer>>();
     // This hashmap maps all suck locations to the corresponding chest ID's
-    private static final HashMap<Location, LinkedList<Integer>> dcMapSuckLocationToID = new HashMap<Location, LinkedList<Integer>>();
+    private static final HashMap<Location, LinkedHashSet<Integer>> dcMapSuckLocationToID = new HashMap<Location, LinkedHashSet<Integer>>();
     private static int currentChestID = 1;
     private static Set<BlockFace> cardinalFaces = new LinkedHashSet<BlockFace>();
     static DropChestNH dc;
@@ -383,18 +390,19 @@ public class DropChestHandler {
         return dcHashMap.get(chestID).getFilter(filter);
     }
     
+    public void setSuckDistance(String identifier, int newDistance) {
+        Integer chestID = getChestID(identifier);
+        setSuckDistance(chestID, newDistance);
+    }
+    
     public void setSuckDistance(Integer chestID, int newDistance) {
         if (chestID == null) {
             return;
         }
         int oldDistance = getChest(chestID).getSuckDistance();
-        int height = getChest(chestID).getSuckHeight();
-        // Negative distance is not allowed -- TODO: Move this to command handler to display error
-        if (newDistance < 0) {
-            return;
-        }        
-        // Distance was not changed
-        if (newDistance == oldDistance) {
+        int height = getChest(chestID).getSuckHeight(); 
+        // Distance was not changed or is negative
+        if ((newDistance == oldDistance) || (newDistance < 0)) {
             return;
         }
         // Chest suck distance is increasing
@@ -405,14 +413,121 @@ public class DropChestHandler {
             // Add all locations in the box to the hashmap
             while (fb.hasNext()) {
                 loc = fb.next();
-                mapChestToLoc(chestID, loc);
+                // Any locs that were already adding to the map previously will be skipped by the method
+                addLocToMap(chestID, loc);
             }
         }
-        // TODO: oldDistance > newDistance case
+        // Chest suck distance is decreasing
+        else {
+            FilterBox fb = new FilterBox(oldDistance, height, getChest(chestID).getPrimaryLocation());
+            Location loc;
+            while (fb.hasNext()) {
+                loc = fb.next();
+                // Remove any locations that are not within range of the new filter box
+                if (!checkDistance(newDistance, height, loc, getChest(chestID).getPrimaryLocation())) {
+                    removeLocFromMap(chestID, loc);
+                }
+            }
+        }
+        // Update chest
+        getChest(chestID).setSuckDistance(newDistance);
     }
     
-    private void mapChestToLoc(Integer chestID, Location location) {
-        // TODO: implement method
+    public void setSuckHeight(String identifier, int newHeight) {
+        Integer chestID = getChestID(identifier);
+        setSuckHeight(chestID, newHeight);
+    }
+    
+    public void setSuckHeight(Integer chestID, int newHeight) {
+        if (chestID == null) {
+            return;
+        }
+        int oldHeight = getChest(chestID).getSuckHeight();
+        int distance = getChest(chestID).getSuckDistance();
+        if ((newHeight == oldHeight) || (newHeight < 0)) {
+            return;
+        }
+        // Chest suck height is increasing
+        if (newHeight > oldHeight) {
+            FilterBox fb = new FilterBox(distance, newHeight, getChest(chestID).getPrimaryLocation());
+            Location loc;
+            while (fb.hasNext()) {
+                loc = fb.next();
+                // Any locs that were already adding to the map previously will be skipped by the method
+                addLocToMap(chestID, loc);
+            }
+        }
+        // Chest suck height is decreasing
+        else {
+            FilterBox fb = new FilterBox(distance, oldHeight, getChest(chestID).getPrimaryLocation());
+            Location loc;
+            while (fb.hasNext()) {
+                loc = fb.next();
+                if (!checkDistance(distance, newHeight, loc, getChest(chestID).getPrimaryLocation())) {
+                    removeLocFromMap(chestID, loc);
+                }                
+            }
+        }
+        getChest(chestID).setSuckHeight(newHeight);
+    }
+    
+    public ItemStack pickupItem(ItemStack is, Location location) {
+        // Round the location so we can compare it to locations in the hashmap
+        Location newLoc = roundLoc(location);
+        if (!dcMapSuckLocationToID.containsKey(newLoc)) {
+            return is;
+        }
+        // Some bukkit methods change the item stack so we clone it first
+        ItemStack iss = is.clone();
+        LinkedHashSet<Integer> chestList = dcMapSuckLocationToID.get(newLoc);
+        for (Integer chestID : chestList) {
+            // Check each chest filter if it is sucking up the item
+            if (chestFilterContains(chestID, iss.getType(), Filter.SUCK)) {
+                // Add item to chest, if nothing is left we can return now without looping through the other chests
+                iss = addItem(chestID, iss);
+                if ((iss == null) || (iss.getAmount() == 0)) {
+                    return iss;
+                }
+            }
+        }
+        return iss;
+    }
+    
+    private void addLocToMap(Integer chestID, Location location) {
+        //location.getBlock().setType(Material.GLASS);          // DEBUG -- Easily allows visualization of area covered
+        
+        // Location is already mapped, add chest to the set
+        if (dcMapSuckLocationToID.containsKey(location)) {
+            dcMapSuckLocationToID.get(location).add(chestID);
+        }
+        // Location is not mapped yet, create new set and add chest to it
+        else {
+            LinkedHashSet<Integer> chestSet = new LinkedHashSet<Integer>();
+            chestSet.add(chestID);
+            dcMapSuckLocationToID.put(location, chestSet);
+        }
+    }
+    
+    private void removeLocFromMap(Integer chestID, Location location) {
+        //location.getBlock().setType(Material.AIR);            // DEBUG -- Easily allows visualization of area covered
+        
+        if (!dcMapSuckLocationToID.containsKey(location)) {
+            return;
+        }
+        // Remove chest ID from the list
+        dcMapSuckLocationToID.get(location).remove(chestID);
+        // If set is empty, removing location mapping
+        if (dcMapSuckLocationToID.get(location).isEmpty()) {
+            dcMapSuckLocationToID.remove(location);
+        }
+    }
+    
+    // Checks if <checkLoc> is within <distance> and <height> of <chestLoc>
+    private boolean checkDistance(int distance, int height, Location checkLoc, Location chestLoc) {
+        int xDist = Math.abs(checkLoc.getBlockX() - chestLoc.getBlockX());
+        int yDist = Math.abs(checkLoc.getBlockY() - chestLoc.getBlockY());
+        int zDist = Math.abs(checkLoc.getBlockZ() - chestLoc.getBlockZ());
+        return ((xDist <= distance) && (yDist <= height) && (zDist <= distance));
     }
     
     // Checks which chest is primary.  Returns true if the order is correct (first parameter primary, second secondary) or false it should be reversed
@@ -434,5 +549,17 @@ public class DropChestHandler {
     
     private DropChestObj getChest(Integer chestID) {
         return dcHashMap.get(chestID);
+    }
+    
+    private Location roundLoc(Location location) {
+        if (location == null) {
+            return null;
+        }
+        Location newLoc = new Location(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        return newLoc;
+    }
+    
+    private boolean chestFilterContains(Integer chestID, Material mat, Filter filter) {
+        return (getChest(chestID).filterContains(mat.getId(), filter));
     }
 }

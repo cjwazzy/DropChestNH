@@ -7,16 +7,15 @@ package com.noheroes.dropchestnh.commands;
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Properties;
-import com.noheroes.dropchestnh.internals.Utils;
 import org.bukkit.command.CommandSender;
 
 /**
  *
  * @author PIETER
  */
-public class SetDistanceCmd extends Cmd {
-
-    public SetDistanceCmd(CommandSender cs, String args[]) {
+public class SetHeightCmd extends Cmd {
+    
+    public SetHeightCmd(CommandSender cs, String args[]) {
         super(cs, args);
         minArgs = 3;
     }
@@ -27,17 +26,17 @@ public class SetDistanceCmd extends Cmd {
         chestExistCheck(args[1]);
         ownershipCheck(args[1]);
         
-        Integer distance;
+        Integer height;
         try {
-            distance = Integer.valueOf(args[2]);
+            height = Integer.valueOf(args[2]);
         } catch (NumberFormatException ex) {
-            throw new MissingOrIncorrectParametersException("The distance must be a non-negative number between 0 and " + Properties.maxDistance);
+            throw new MissingOrIncorrectParametersException("The distance must be a non-negative number between 0 and " + Properties.maxHeight);
         }
-        if ((distance < 0 ) || (distance > Properties.maxDistance)) {
-            throw new MissingOrIncorrectParametersException("The distance must be a non-negative number between 0 and " + Properties.maxDistance);
+        if ((height < 0 ) || (height > Properties.maxHeight)) {
+            throw new MissingOrIncorrectParametersException("The distance must be a non-negative number between 0 and " + Properties.maxHeight);
         }
-        dc.getDcHandler().setSuckDistance(args[1], distance);
-        cs.sendMessage("Suck distance for chest " + args[1] + " changed to " + distance); 
+        dc.getDcHandler().setSuckHeight(args[1], height);
+        cs.sendMessage("Suck height for chest " + args[1] + " changed to " + height); 
         return true;
     }
 }

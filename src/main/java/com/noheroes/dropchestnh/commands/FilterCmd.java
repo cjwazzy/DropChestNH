@@ -46,16 +46,10 @@ public class FilterCmd extends Cmd {
         if (args.length < 3) {
             throw new MissingOrIncorrectParametersException("You must name the chest followed by the item(s) to be filtered, or use /dc " + filter.toString().toLowerCase() + " for interactive mode");
         }
-        if (!dc.getDcHandler().chestExists(args[1])) {
-            throw new InsufficientPermissionsException("This chest does not exist");
-        }
+        // Ensure chest exists
+        chestExistCheck(args[1]);
         // Only the owner of the chest or an admin can make modifications
-        if (!Utils.isAdmin(cs)) {
-            getPlayer();
-            if (!dc.getDcHandler().ownsChest(args[1], player)) {            
-                throw new InsufficientPermissionsException("You do not own this chest");
-            }
-        }
+        ownershipCheck(args[1]);
         
         // Add a filter for each extra argument
         for (int i = 2; i < args.length; i++) {

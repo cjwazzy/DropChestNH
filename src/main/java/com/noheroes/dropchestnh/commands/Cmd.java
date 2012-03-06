@@ -45,6 +45,30 @@ abstract public class Cmd {
             throw new InsufficientPermissionsException();
         }
     }
+    // Check for chest ownership or admin status
+    protected void ownershipCheck(String identifier) throws InsufficientPermissionsException {
+        if (!Utils.isAdmin(cs)) {
+            getPlayer();
+            if (!dc.getDcHandler().ownsChest(identifier, player)) {            
+                throw new InsufficientPermissionsException("You do not own this chest");
+            }
+        }
+    }
+    // Check for either chest ownership or <permission> permission
+    protected void ownershipCheck(String identifier, String permission)  throws InsufficientPermissionsException {
+        if (!Utils.hasPermission(cs, permission)) {
+            getPlayer();
+            if (!dc.getDcHandler().ownsChest(identifier, player)) {            
+                throw new InsufficientPermissionsException("You do not own this chest");
+            }
+        }        
+    }
+    
+    protected void chestExistCheck(String identifier) throws MissingOrIncorrectParametersException {
+        if (!dc.getDcHandler().chestExists(identifier)) {
+            throw new MissingOrIncorrectParametersException("This chest does not exist");
+        }        
+    }
     
     abstract public boolean execute() throws InsufficientPermissionsException, MissingOrIncorrectParametersException;
 }

@@ -7,6 +7,8 @@ package com.noheroes.dropchestnh;
 import com.noheroes.dropchestnh.commands.DCCommandExecutor;
 import com.noheroes.dropchestnh.internals.DropChestEditor;
 import com.noheroes.dropchestnh.internals.DropChestHandler;
+import com.noheroes.dropchestnh.internals.ItemLoopTask;
+import com.noheroes.dropchestnh.internals.Properties;
 import com.noheroes.dropchestnh.internals.Utils.EditMode;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
 import com.noheroes.dropchestnh.listeners.DCListener;
@@ -24,12 +26,13 @@ public class DropChestNH extends JavaPlugin {
     private DropChestHandler dcHandler = new DropChestHandler(this);
     private DCListener dcListener = new DCListener(this);
     private HashMap<Player, DropChestEditor> playerEditMap = new HashMap<Player, DropChestEditor>();
+    private Integer taskID;
     
     private static DropChestNH instance;
 
     @Override
     public void onDisable() {
-        
+        this.getServer().getScheduler().cancelTask(taskID);
     }
     
     @Override
@@ -37,6 +40,7 @@ public class DropChestNH extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(dcListener, this);
         instance = this;
         getCommand("dropchest").setExecutor(new DCCommandExecutor(this));
+        startItemLoop();
     }
     
     public void log(String message) {
@@ -100,5 +104,10 @@ public class DropChestNH extends JavaPlugin {
             return true;
         }        
         return false;
+    }
+    
+    private void startItemLoop() {
+        taskID = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ItemLoopTask(this), 
+                Properties.itemLoopDelay, Properties.itemLoopDelay);
     }
 }
