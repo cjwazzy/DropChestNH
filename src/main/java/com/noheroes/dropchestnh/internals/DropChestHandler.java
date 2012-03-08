@@ -26,8 +26,6 @@ import org.bukkit.inventory.ItemStack;
  * @author PIETER
  */
 
-    // TODO: Fix updateFilter (2 master methods)
-
 public class DropChestHandler {
     // Stores all dropchests using a unique ID as key
     private static final HashMap<Integer, DropChestObj> dcHashMap = new HashMap<Integer, DropChestObj>();
@@ -200,8 +198,7 @@ public class DropChestHandler {
         if ((chestID == null) || (item == null)) {
             return null;
         }
-        
-        // TODO: item is passed as reference and being changed somehwere, look into
+        // Bukkit methods alter the ItemStack so we clone it first
         ItemStack inputItem = item.clone();
         DropChestObj dropChest;
         dropChest = dcHashMap.get(chestID);
@@ -238,40 +235,30 @@ public class DropChestHandler {
             throw new MissingOrIncorrectParametersException("That is not a dropchest");
         }
         Integer chestID = dcMapLocationToID.get(location);
-        if (chestID == null) {
-            throw new MissingOrIncorrectParametersException("That is not a dropchest");
-        }
-        return dcHashMap.get(chestID).updateFilter(mat.getId(), filter);
+        return updateFilter(mat, chestID, filter);
     }
     
-    public boolean updateFilter(String mat, Integer chestID, Filter filter) throws MissingOrIncorrectParametersException {
+    public boolean updateFilter(Material mat, Integer chestID, Filter filter) throws MissingOrIncorrectParametersException {
 
         if ((chestID == null ) || (!dcHashMap.containsKey(chestID))) {
             throw new MissingOrIncorrectParametersException("That chest does not exist or is not a dropchest.");
         }
-        
-        Material material;
-        material = getMaterialFromString(mat);
-        if (material == null) {
-            throw new MissingOrIncorrectParametersException("Material " + mat + " does not exist");
+
+        // If push or pull filter is used add to push/pull minecart location map
+        if ((filter == Filter.PULL) || (filter == Filter.PUSH)) {
+            addChestToPullMap(chestID);
         }
-        else {
-            // If push or pull filter is used add to push/pull minecart location map
-            if ((filter == Filter.PULL) || (filter == Filter.PUSH)) {
-                addChestToPullMap(chestID);
-            }
-            return dcHashMap.get(chestID).updateFilter(material.getId(), filter);
-        }
-    }
-    
-    public boolean updateFilter(String mat, Location location, Filter filter) throws MissingOrIncorrectParametersException {
-        Integer chestID = dcMapLocationToID.get(location);
-        return updateFilter(mat, chestID, filter);
+        return dcHashMap.get(chestID).updateFilter(mat.getId(), filter);
+
     }
     
     // Attempts to find the chestID by matching indentifier against or chestID or chest name
     public boolean updateFilter(String mat, String identifier, Filter filter) throws MissingOrIncorrectParametersException {
-        return updateFilter(mat, getChestID(identifier), filter);
+        Material material = getMaterialFromString(mat);
+        if (material == null) {
+            throw new MissingOrIncorrectParametersException("Material " + mat + " does not exist");
+        }
+        return updateFilter(material, getChestID(identifier), filter);
     }
      
     public Material getMaterialFromString(String mat) {
@@ -640,8 +627,10 @@ public class DropChestHandler {
     
     private void minecartPassDropChest(Integer chestID, StorageMinecart cart) {
         Inventory cartInv = cart.getInventory();
+        Inventory chestPrimaryInv = getChest(chestID).getPrimaryInventory();
+        Inventory chestSecondaryInv = getChest(chestID).getSecondaryInventory();
         ItemStack is;
-        // Pull filter code
+        // Pull filter loop.  Check all items in minecart
         for (int i = 0; i < cartInv.getSize(); i++) {
             is = cartInv.getItem(i);
             // No item in that slot, move on to next slot
@@ -650,14 +639,39 @@ public class DropChestHandler {
             // If this item is part of the filter we add it to the dropchest
             if (getChest(chestID).filterContains(is.getTypeId(), Filter.PULL)) {
                 ItemStack leftover = addItem(chestID, is);
-                if (leftover == null) {
-                    cartInv.setItem(i, null);
-                }
-                else {
-                    cartInv.setItem(i, leftover);
-                }
+                cartInv.setItem(i, leftover);
             }
         }
-        
+        // Push filter loop for primary inventory
+        for (int i = 0; i < chestPrimaryInv.getSize(); i++) {
+            is = chestPrimaryInv.getItem(i);
+            // No item in that slot, move on to next one
+            if ((is == null) || (is.getAmount() == 0))
+                continue;
+            if (getChest(chestID).filterContains(is.getTypeId(), Filter.PUSH)) {
+                ItemStack leftover = addToCart(is, cartInv);
+                chestPrimaryInv.setItem(i, leftover);
+            }
+        }
+        if (chestSecondaryInv != null) {
+            // Push filter loop for secondary inventory
+            for (int i = 0; i < chestSecondaryInv.getSize(); i++) {
+                is = chestSecondaryInv.getItem(i);
+                // No item in that slot, move on to next one
+                if ((is == null) || (is.getAmount() == 0))
+                    continue;
+                if (getChest(chestID).filterContains(is.getTypeId(), Filter.PUSH)) {
+                    ItemStack leftover = addToCart(is, cartInv);
+                    chestSecondaryInv.setItem(i, leftover);
+                }
+            }            
+        }
+    }
+    
+    private ItemStack addToCart(ItemStack is, Inventory cartInv) {
+        HashMap<Integer, ItemStack> leftoverStack;
+        ItemStack inputItem = is.clone();
+        leftoverStack = cartInv.addItem(inputItem);
+        return ((leftoverStack == null) ? null : leftoverStack.get(0));
     }
 }
