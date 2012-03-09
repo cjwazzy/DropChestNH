@@ -8,6 +8,7 @@ import com.noheroes.dropchestnh.commands.DCCommandExecutor;
 import com.noheroes.dropchestnh.internals.DropChestEditor;
 import com.noheroes.dropchestnh.internals.DropChestHandler;
 import com.noheroes.dropchestnh.internals.ItemLoopTask;
+import com.noheroes.dropchestnh.internals.MiniStorage;
 import com.noheroes.dropchestnh.internals.Properties;
 import com.noheroes.dropchestnh.internals.Utils.EditMode;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
@@ -27,6 +28,7 @@ public class DropChestNH extends JavaPlugin {
     private DCListener dcListener = new DCListener(this);
     private HashMap<Player, DropChestEditor> playerEditMap = new HashMap<Player, DropChestEditor>();
     private Integer taskID;
+    public MiniStorage minidb;
     
     private static DropChestNH instance;
 
@@ -40,6 +42,8 @@ public class DropChestNH extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(dcListener, this);
         instance = this;
         getCommand("dropchest").setExecutor(new DCCommandExecutor(this));
+        minidb = new MiniStorage(this, this.getDataFolder().getParent());
+        dcHandler.loadChests(minidb);
         startItemLoop();
     }
     

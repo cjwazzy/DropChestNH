@@ -28,14 +28,38 @@ public class FilterBox {
     private int currentZ;
     private boolean hasNext;
     
-    public FilterBox(int distance, int height, Location location) {
-        this.world = location.getWorld();
-        xMin = location.getBlockX() - distance;
-        xMax = location.getBlockX() + distance;
-        yMin = location.getBlockY() - height;
-        yMax = location.getBlockY() + height;
-        zMin = location.getBlockZ() - distance;
-        zMax = location.getBlockZ() + distance;        
+    public FilterBox(int distance, int height, Location primaryLocation, Location secondaryLocation) {
+        // Either location is fine for world info
+        this.world = primaryLocation.getWorld();
+        // Single chest
+        if (secondaryLocation == null) {
+            xMin = primaryLocation.getBlockX() - distance;
+            xMax = primaryLocation.getBlockX() + distance;
+            zMin = primaryLocation.getBlockZ() - distance;
+            zMax = primaryLocation.getBlockZ() + distance;
+        }
+        // Double chest
+        else {
+            if (primaryLocation.getBlockX() < secondaryLocation.getBlockX()) {
+                xMin = primaryLocation.getBlockX() - distance;
+                xMax = secondaryLocation.getBlockX() + distance;
+            }
+            else {
+                xMin = secondaryLocation.getBlockX() - distance;
+                xMax = primaryLocation.getBlockX() + distance;
+            }
+            if (primaryLocation.getBlockZ() < secondaryLocation.getBlockZ()) {
+                zMin = primaryLocation.getBlockZ() - distance;
+                zMax = secondaryLocation.getBlockZ() + distance;
+            }
+            else {
+                zMin = secondaryLocation.getBlockZ() - distance;                
+                zMax = primaryLocation.getBlockZ() + distance;
+            }
+        }
+        // Y locations are the same either way since double chests cannot stack along the Y axis
+        yMin = primaryLocation.getBlockY() - height;
+        yMax = primaryLocation.getBlockY() + height;
         currentX = xMin;
         currentY = yMin;
         currentZ = zMin;

@@ -6,10 +6,12 @@ package com.noheroes.dropchestnh.internals;
 
 import com.noheroes.dropchestnh.DropChestNH;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
+import com.noheroes.dropchestnh.interfaces.StorageInterface;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.bukkit.Location;
@@ -49,6 +51,45 @@ public class DropChestHandler {
         cardinalFaces.add(BlockFace.EAST);
         cardinalFaces.add(BlockFace.SOUTH);
         cardinalFaces.add(BlockFace.WEST);
+    }
+    
+    public void loadChests(StorageInterface storage) {
+        List<DropChestObj> chestList = storage.loadAll();
+        if ((chestList == null) || (chestList.isEmpty())) {
+            dc.log("No drop chests found, skipping load");
+            return;
+        }
+        Integer chestID;
+        for (DropChestObj dropchest : chestList) {
+            // Add the dropchest to all the hashmaps
+            chestID = dropchest.getID();
+            dcHashMap.put(chestID, dropchest);
+            if (dropchest.getName() != null) {
+                dcMapChestNameToID.put(dropchest.getName(), chestID);
+            }
+            dcMapLocationToID.put(dropchest.getPrimaryLocation(), chestID);
+            if (dropchest.getSecondaryLocation() != null) {
+                dcMapLocationToID.put(dropchest.getSecondaryLocation(), chestID);
+            }
+            if (dcMapPlayerNameToID.containsKey(dropchest.getOwner().toLowerCase())) {
+                dcMapPlayerNameToID.get(dropchest.getOwner().toLowerCase()).offer(dropchest.getID());
+            }
+            else {
+                LinkedList<Integer> playerList = new LinkedList<Integer>();
+                playerList.offer(dropchest.getID());
+                dcMapPlayerNameToID.put(dropchest.getOwner().toLowerCase(), playerList);
+            }
+            FilterBox fb = new FilterBox(dropchest.getSuckDistance(), dropchest.getSuckHeight(), 
+                    dropchest.getPrimaryLocation(), dropchest.getSecondaryLocation());
+            Location loc;
+            while (fb.hasNext()) {
+                loc = fb.next();
+                addLocToMap(chestID, loc, Filter.SUCK);
+            }
+            if (dropchest.isFilterInUse(Filter.PUSH) || dropchest.isFilterInUse(Filter.PULL)) {
+                addChestToPullMap(chestID);
+            }
+        }
     }
     
     public boolean addChest(Block chest, Player player) throws MissingOrIncorrectParametersException {
@@ -147,7 +188,8 @@ public class DropChestHandler {
         // Remove chest from player's list of owned chests
         dcMapPlayerNameToID.get(dcHashMap.get(chestID).getOwner().toLowerCase()).remove(chestID);
         // Remove all locations associated with this chest's suck area
-        FilterBox fb = new FilterBox(getChest(chestID).getSuckDistance(), getChest(chestID).getSuckHeight(), getChest(chestID).getOriginalLocation());
+        FilterBox fb = new FilterBox(getChest(chestID).getSuckDistance(), getChest(chestID).getSuckHeight(), 
+                getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation());
         while (fb.hasNext()) {
             removeLocFromMap(chestID, fb.next(), Filter.SUCK);
         }
@@ -190,6 +232,15 @@ public class DropChestHandler {
         if (isFilterInUse(chestID, Filter.PULL) || isFilterInUse(chestID, Filter.PUSH)) {
             addChestToPullMap(chestID);
         }
+        // Update suck filter area for double chest
+        FilterBox fb = new FilterBox(getChest(chestID).getSuckDistance(), 
+                getChest(chestID).getSuckHeight(), getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation());
+            Location loc;
+            while (fb.hasNext()) {
+                loc = fb.next();
+                // Any locs that were already adding to the map previously will be skipped by the method
+                addLocToMap(chestID, loc, Filter.SUCK);
+            }
         return true;
     }
     
@@ -414,7 +465,8 @@ public class DropChestHandler {
         // Chest suck distance is increasing
         if (newDistance > oldDistance) {
             // Create the box in which the chest filters
-            FilterBox fb = new FilterBox(newDistance, height, getChest(chestID).getPrimaryLocation());
+            FilterBox fb = new FilterBox(newDistance, height, 
+                    getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation());
             Location loc;
             // Add all locations in the box to the hashmap
             while (fb.hasNext()) {
@@ -425,12 +477,14 @@ public class DropChestHandler {
         }
         // Chest suck distance is decreasing
         else {
-            FilterBox fb = new FilterBox(oldDistance, height, getChest(chestID).getPrimaryLocation());
+            FilterBox fb = new FilterBox(oldDistance, height, 
+                    getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation());
             Location loc;
             while (fb.hasNext()) {
                 loc = fb.next();
                 // Remove any locations that are not within range of the new filter box
-                if (!checkDistance(newDistance, height, loc, getChest(chestID).getPrimaryLocation())) {
+                if (!checkDistance(newDistance, height, loc, 
+                        getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation())) {
                     removeLocFromMap(chestID, loc, Filter.SUCK);
                 }
             }
@@ -455,7 +509,8 @@ public class DropChestHandler {
         }
         // Chest suck height is increasing
         if (newHeight > oldHeight) {
-            FilterBox fb = new FilterBox(distance, newHeight, getChest(chestID).getPrimaryLocation());
+            FilterBox fb = new FilterBox(distance, newHeight, 
+                    getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation());
             Location loc;
             while (fb.hasNext()) {
                 loc = fb.next();
@@ -465,11 +520,13 @@ public class DropChestHandler {
         }
         // Chest suck height is decreasing
         else {
-            FilterBox fb = new FilterBox(distance, oldHeight, getChest(chestID).getPrimaryLocation());
+            FilterBox fb = new FilterBox(distance, oldHeight, 
+                    getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation());
             Location loc;
             while (fb.hasNext()) {
                 loc = fb.next();
-                if (!checkDistance(distance, newHeight, loc, getChest(chestID).getPrimaryLocation())) {
+                if (!checkDistance(distance, newHeight, loc, 
+                        getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation())) {
                     removeLocFromMap(chestID, loc, Filter.SUCK);
                 }                
             }
@@ -563,6 +620,16 @@ public class DropChestHandler {
         int zDist = Math.abs(checkLoc.getBlockZ() - chestLoc.getBlockZ());
         return ((xDist <= distance) && (yDist <= height) && (zDist <= distance));
     }
+
+    // Checks the distance for double chests
+    private boolean checkDistance (int distance, int height, Location checkLoc, Location primaryChestLoc, Location secondaryChestLoc) {
+        if (secondaryChestLoc == null) {
+            return checkDistance(distance, height, checkLoc, primaryChestLoc);
+        }
+        else {
+            return (checkDistance(distance, height, checkLoc, primaryChestLoc) || checkDistance(distance, height, checkLoc, secondaryChestLoc));
+        }
+    }
     
     // Checks which chest is primary.  Returns true if the order is correct (first parameter primary, second secondary) or false it should be reversed
     // The primary chest holds the top 3 rows of the inventory and is always the north or east most chest.
@@ -581,7 +648,7 @@ public class DropChestHandler {
         return null;
     }
     
-    private DropChestObj getChest(Integer chestID) {
+    public DropChestObj getChest(Integer chestID) {
         return dcHashMap.get(chestID);
     }
     
@@ -598,31 +665,86 @@ public class DropChestHandler {
     }
     
     private void addChestToPullMap(Integer chestID) {
+        LinkedList<Location> locList = getLocationCross(getChest(chestID).getPrimaryLocation(), 
+                Properties.minecartFilterDistance, Properties.minecartVerticalPickup);
+        for (Location loc : locList) {
+            addLocToMap(chestID, loc, Filter.PULL);
+        }
+        if (getChest(chestID).getSecondaryLocation() != null) {
+            locList = getLocationCross(getChest(chestID).getSecondaryLocation(), 
+                    Properties.minecartFilterDistance, Properties.minecartVerticalPickup);
+            for (Location loc : locList) {
+                addLocToMap(chestID, loc, Filter.PULL);
+            }            
+        }
         // Add to push/pull loc map for primary chest
-        FilterBox fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getPrimaryLocation());
+        /*
+        //FilterBox fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getPrimaryLocation());
         while (fb.hasNext()) {
             addLocToMap(chestID, fb.next(), Filter.PULL);
         }
         // Add to push/pull loc map for secondary chest if it exists
         if (getChest(chestID).getSecondaryLocation() != null) {
-            fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getSecondaryLocation());
+            //fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getSecondaryLocation());
             while (fb.hasNext()) {
                 addLocToMap(chestID, fb.next(), Filter.PULL);
             }
-        }        
+        } */       
     }
     
     private void removeChestFromPullMap(Integer chestID) {
+        LinkedList<Location> locList = getLocationCross(getChest(chestID).getPrimaryLocation(), 
+                Properties.minecartFilterDistance, Properties.minecartVerticalPickup);
+        for (Location loc : locList) {
+            removeLocFromMap(chestID, loc, Filter.PULL);
+        }
+        if (getChest(chestID).getSecondaryLocation() != null) {
+            locList = getLocationCross(getChest(chestID).getSecondaryLocation(), 
+                    Properties.minecartFilterDistance, Properties.minecartVerticalPickup);
+            for (Location loc : locList) {
+                removeLocFromMap(chestID, loc, Filter.PULL);
+            }            
+        }
+        /*
         FilterBox fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getPrimaryLocation());
         while (fb.hasNext()) {
             removeLocFromMap(chestID, fb.next(), Filter.PULL);
         }
         if (getChest(chestID).getSecondaryLocation() != null) {
-            fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getSecondaryLocation());
+            //fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getSecondaryLocation());
             while (fb.hasNext()) {
                 removeLocFromMap(chestID, fb.next(), Filter.PULL);
             }
+        }*/
+    }
+    
+    // Constructs a list of locations in a cross form around the given location for the push/pull filter
+    private LinkedList<Location> getLocationCross(Location location, Integer distance, boolean vertical) {
+        LinkedList<Location> locList = new LinkedList<Location>();
+        Location loc;
+        Integer currentX = location.getBlockX();
+        Integer currentY = location.getBlockY();
+        Integer currentZ = location.getBlockZ();
+        // Add blocks along x axis
+        for (currentX = (location.getBlockX() - distance); currentX <= (location.getBlockX() + distance); currentX++) {
+            loc = new Location (location.getWorld(), currentX, currentY, currentZ);
+            locList.add(loc);
         }
+        currentX = location.getBlockX();
+        // Add blocks along z axis
+        for (currentZ = (location.getBlockZ() - distance); currentZ <= (location.getBlockZ() + distance); currentZ++) {
+            loc = new Location (location.getWorld(), currentX, currentY, currentZ);
+            locList.add(loc);
+        }
+        currentZ = location.getBlockZ();
+        // If vertical is true, add blocks along y axis
+        if (vertical) {
+            for (currentY = (location.getBlockY() - distance); currentY <= (location.getBlockY() + distance); currentY++) {
+                loc = new Location (location.getWorld(), currentX, currentY, currentZ);
+                locList.add(loc);
+            }            
+        }
+        return locList;
     }
     
     private void minecartPassDropChest(Integer chestID, StorageMinecart cart) {

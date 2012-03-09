@@ -10,7 +10,8 @@ import org.bukkit.ChatColor;
  *
  * @author PIETER
  */
-public class Properties {  
+public class Properties {
+
     private Properties () {}
     
     
@@ -20,6 +21,9 @@ public class Properties {
     public static int itemLoopDelay = 20;
     
     public static int minecartFilterDistance = 1;
+    static boolean minecartVerticalPickup = true;
+    
+    public static final String miniFileName = "dropchest.mini";
     
     // Colors
     public static final ChatColor chestIDColor = ChatColor.AQUA;

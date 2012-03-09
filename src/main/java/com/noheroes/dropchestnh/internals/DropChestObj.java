@@ -20,21 +20,19 @@ import org.bukkit.inventory.ItemStack;
 public class DropChestObj {
     private Location primaryLocation;
     private Location secondaryLocation;
-    private Location originalLocation;
-    private int chestID;
+    private Integer chestID;
     private String chestName;
     private String ownerName;
     private Set<Integer> suckFilter;
     private Set<Integer> pullFilter;
     private Set<Integer> pushFilter;
-    private int chestSuckDistance;
-    private int chestSuckHeight;
+    private Integer chestSuckDistance;
+    private Integer chestSuckHeight;
     
     
     protected DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation, Location secondaryLocation) {
 
         this.primaryLocation = primaryLocation;
-        this.originalLocation = primaryLocation;
         this.secondaryLocation = secondaryLocation;
         this.chestName = chestName;
         this.ownerName = ownerName;
@@ -56,10 +54,6 @@ public class DropChestObj {
     
     protected DropChestObj(int chestID, String ownerName, Location primaryLocation) {
         this(chestID, ownerName, null, primaryLocation, null);
-    }
-    
-    protected Location getOriginalLocation() {
-        return originalLocation;
     }
     
     protected Location getPrimaryLocation() {
@@ -86,7 +80,7 @@ public class DropChestObj {
         return ownerName;
     }
     
-    protected int getID() {
+    protected Integer getID() {
         return chestID;
     }
     
@@ -116,7 +110,8 @@ public class DropChestObj {
     
     protected void addAllFilter(Filter filter) {
         for (Material mat : Material.values()) {
-            getFilter(filter).add(mat.getId());
+            if (mat != Material.AIR)
+                getFilter(filter).add(mat.getId());
         }
     }
     
@@ -154,7 +149,7 @@ public class DropChestObj {
         }
     } 
     
-    protected int getSuckDistance() {
+    protected Integer getSuckDistance() {
         return chestSuckDistance;
     }
     
@@ -163,7 +158,7 @@ public class DropChestObj {
             this.chestSuckDistance = suckDistance;
     }
     
-    protected int getSuckHeight() {
+    protected Integer getSuckHeight() {
         return chestSuckHeight;
     }
     
