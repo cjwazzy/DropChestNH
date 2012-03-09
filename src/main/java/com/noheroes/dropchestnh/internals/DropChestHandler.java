@@ -41,19 +41,28 @@ public class DropChestHandler {
     private static final HashMap<Location, LinkedHashSet<Integer>> dcMapSuckLocationToID = new HashMap<Location, LinkedHashSet<Integer>>();
     // This hashmap maps push/pull locations to chest ID's
     private static final HashMap<Location, LinkedHashSet<Integer>> dcMapPullLocationToID = new HashMap<Location, LinkedHashSet<Integer>>();
+    // Set of chests that have been changed and need to be saved next time a save happens
+    private static final Set<Integer> dcChangedChestID = new LinkedHashSet<Integer>();
     private static int currentChestID = 1;
     private static Set<BlockFace> cardinalFaces = new LinkedHashSet<BlockFace>();
-    static DropChestNH dc;
+    private static DropChestNH dc;
+    private static StorageInterface storage;
     
-    public DropChestHandler(DropChestNH dc) {
+    public DropChestHandler(DropChestNH dc, StorageInterface storage) {
         this.dc = dc;
+        this.storage = storage;
         cardinalFaces.add(BlockFace.NORTH);
         cardinalFaces.add(BlockFace.EAST);
         cardinalFaces.add(BlockFace.SOUTH);
         cardinalFaces.add(BlockFace.WEST);
     }
     
-    public void loadChests(StorageInterface storage) {
+    
+    /********************************************
+     *                  PUBLIC                  *
+     ********************************************/
+    
+    public void loadChests() {
         List<DropChestObj> chestList = storage.loadAll();
         if ((chestList == null) || (chestList.isEmpty())) {
             dc.log("No drop chests found, skipping load");
@@ -90,6 +99,17 @@ public class DropChestHandler {
                 addChestToPullMap(chestID);
             }
         }
+    }
+    
+    public void saveChangedChests() {
+        if (dcChangedChestID.isEmpty()) {
+            return;     // Nothing has changed
+        }
+        for (Integer chestID : dcChangedChestID) {
+            storage.save(getChest(chestID));
+        }
+        dcChangedChestID.clear();
+        storage.write();
     }
     
     public boolean addChest(Block chest, Player player) throws MissingOrIncorrectParametersException {
@@ -155,6 +175,7 @@ public class DropChestHandler {
             playerList.offer(currentChestID);
             dcMapPlayerNameToID.put(player.getName().toLowerCase(), playerList);
         }
+        dcChangedChestID.add(currentChestID);
         return true;
     }
     
@@ -176,6 +197,8 @@ public class DropChestHandler {
         if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
             return false;  // Chest doesn't exist
         }
+        // Delete from storage
+        storage.removeChest(getChest(chestID));
         // Remove name mapping if present
         if (dcHashMap.get(chestID).getName() != null) {
             dcMapChestNameToID.remove(dcHashMap.get(chestID).getName());
@@ -235,12 +258,13 @@ public class DropChestHandler {
         // Update suck filter area for double chest
         FilterBox fb = new FilterBox(getChest(chestID).getSuckDistance(), 
                 getChest(chestID).getSuckHeight(), getChest(chestID).getPrimaryLocation(), getChest(chestID).getSecondaryLocation());
-            Location loc;
-            while (fb.hasNext()) {
-                loc = fb.next();
-                // Any locs that were already adding to the map previously will be skipped by the method
-                addLocToMap(chestID, loc, Filter.SUCK);
-            }
+        Location loc;
+        while (fb.hasNext()) {
+            loc = fb.next();
+            // Any locs that were already adding to the map previously will be skipped by the method
+            addLocToMap(chestID, loc, Filter.SUCK);
+        }
+        dcChangedChestID.add(chestID);
         return true;
     }
     
@@ -299,8 +323,8 @@ public class DropChestHandler {
         if ((filter == Filter.PULL) || (filter == Filter.PUSH)) {
             addChestToPullMap(chestID);
         }
+        dcChangedChestID.add(chestID);
         return dcHashMap.get(chestID).updateFilter(mat.getId(), filter);
-
     }
     
     // Attempts to find the chestID by matching indentifier against or chestID or chest name
@@ -343,7 +367,8 @@ public class DropChestHandler {
         if (chestID == null) {
             throw new MissingOrIncorrectParametersException("That chest does not exist or is not a dropchest.");
         }
-        dcHashMap.get(chestID).clearFilter(filter);
+        getChest(chestID).clearFilter(filter);
+        dcChangedChestID.add(chestID);
     }
     
     public void clearFilter(Location location, Filter filter) throws MissingOrIncorrectParametersException {
@@ -358,7 +383,8 @@ public class DropChestHandler {
         if (chestID == null) {
             throw new MissingOrIncorrectParametersException("That chest does not exist or is not a dropchest.");
         }
-        dcHashMap.get(chestID).addAllFilter(filter);
+        getChest(chestID).addAllFilter(filter);
+        dcChangedChestID.add(chestID);
     }
     
     public void addAllFilter(Location location, Filter filter) throws MissingOrIncorrectParametersException {
@@ -491,6 +517,7 @@ public class DropChestHandler {
         }
         // Update chest
         getChest(chestID).setSuckDistance(newDistance);
+        dcChangedChestID.add(chestID);
     }
     
     public void setSuckHeight(String identifier, int newHeight) {
@@ -532,6 +559,7 @@ public class DropChestHandler {
             }
         }
         getChest(chestID).setSuckHeight(newHeight);
+        dcChangedChestID.add(chestID);
     }
     
     public ItemStack pickupItem(ItemStack is, Location location) {
@@ -569,6 +597,12 @@ public class DropChestHandler {
         }
         
     }
+    
+    
+    
+    /********************************************
+     *                PRIVATE                   *
+     ********************************************/
     
     private void addLocToMap(Integer chestID, Location location, Filter filter) {
         //location.getBlock().setType(Material.GLASS);          // DEBUG -- Easily allows visualization of area covered
@@ -648,7 +682,7 @@ public class DropChestHandler {
         return null;
     }
     
-    public DropChestObj getChest(Integer chestID) {
+    private DropChestObj getChest(Integer chestID) {
         return dcHashMap.get(chestID);
     }
     
@@ -676,20 +710,7 @@ public class DropChestHandler {
             for (Location loc : locList) {
                 addLocToMap(chestID, loc, Filter.PULL);
             }            
-        }
-        // Add to push/pull loc map for primary chest
-        /*
-        //FilterBox fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getPrimaryLocation());
-        while (fb.hasNext()) {
-            addLocToMap(chestID, fb.next(), Filter.PULL);
-        }
-        // Add to push/pull loc map for secondary chest if it exists
-        if (getChest(chestID).getSecondaryLocation() != null) {
-            //fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getSecondaryLocation());
-            while (fb.hasNext()) {
-                addLocToMap(chestID, fb.next(), Filter.PULL);
-            }
-        } */       
+        }     
     }
     
     private void removeChestFromPullMap(Integer chestID) {
@@ -705,17 +726,6 @@ public class DropChestHandler {
                 removeLocFromMap(chestID, loc, Filter.PULL);
             }            
         }
-        /*
-        FilterBox fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getPrimaryLocation());
-        while (fb.hasNext()) {
-            removeLocFromMap(chestID, fb.next(), Filter.PULL);
-        }
-        if (getChest(chestID).getSecondaryLocation() != null) {
-            //fb = new FilterBox(Properties.minecartFilterDistance, Properties.minecartFilterDistance, getChest(chestID).getSecondaryLocation());
-            while (fb.hasNext()) {
-                removeLocFromMap(chestID, fb.next(), Filter.PULL);
-            }
-        }*/
     }
     
     // Constructs a list of locations in a cross form around the given location for the push/pull filter

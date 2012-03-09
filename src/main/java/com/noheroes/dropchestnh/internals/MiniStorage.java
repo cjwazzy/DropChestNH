@@ -35,7 +35,7 @@ public class MiniStorage implements StorageInterface {
     private static final String ownerNameKey = "chestowner";
     private static final String chestSuckDistance = "suckdistance";
     private static final String chestSuckHeight = "suckheight";
-    public Mini minidb;
+    private Mini minidb;
     
     public MiniStorage(DropChestNH dc, String folder) {
         this.dc = dc;
@@ -55,11 +55,6 @@ public class MiniStorage implements StorageInterface {
     public void save(DropChestObj chest) {
         Arguments arg = DCOToArg(chest);
         minidb.addIndex(chest.getID().toString(), arg);
-        minidb.update();
-    }
-
-    public DropChestObj loadChest(Integer chestID) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public List<DropChestObj> loadAll() {
@@ -78,7 +73,18 @@ public class MiniStorage implements StorageInterface {
             }
         }
         return chestList;
-    }  
+    }
+    
+
+    public void removeChest(DropChestObj chest) {
+        Integer chestID = chest.getID();
+        minidb.removeIndex(chestID.toString());
+        minidb.update();
+    }
+    
+    public void write() {
+        minidb.update();
+    }
     
     private Arguments DCOToArg(DropChestObj dropchest) {
         // Create new argument using chest ID as key

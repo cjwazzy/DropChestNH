@@ -24,17 +24,20 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class DropChestNH extends JavaPlugin {
     
-    private DropChestHandler dcHandler = new DropChestHandler(this);
+    private DropChestHandler dcHandler;
     private DCListener dcListener = new DCListener(this);
     private HashMap<Player, DropChestEditor> playerEditMap = new HashMap<Player, DropChestEditor>();
-    private Integer taskID;
-    public MiniStorage minidb;
+    private Integer itemLoopTaskID;
+    private Integer saveLoopTaskID;
+    private MiniStorage minidb;
     
     private static DropChestNH instance;
 
     @Override
     public void onDisable() {
-        this.getServer().getScheduler().cancelTask(taskID);
+        dcHandler.saveChangedChests();
+        this.getServer().getScheduler().cancelTask(itemLoopTaskID);
+        this.getServer().getScheduler().cancelTask(saveLoopTaskID);
     }
     
     @Override
@@ -43,8 +46,10 @@ public class DropChestNH extends JavaPlugin {
         instance = this;
         getCommand("dropchest").setExecutor(new DCCommandExecutor(this));
         minidb = new MiniStorage(this, this.getDataFolder().getParent());
-        dcHandler.loadChests(minidb);
+        dcHandler = new DropChestHandler(this, minidb);
+        dcHandler.loadChests();
         startItemLoop();
+        startSaveLoop();
     }
     
     public void log(String message) {
@@ -111,7 +116,15 @@ public class DropChestNH extends JavaPlugin {
     }
     
     private void startItemLoop() {
-        taskID = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ItemLoopTask(this), 
+        itemLoopTaskID = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ItemLoopTask(this), 
                 Properties.itemLoopDelay, Properties.itemLoopDelay);
+    }
+    
+    private void startSaveLoop() {
+        saveLoopTaskID = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+            public void run() {
+                dcHandler.saveChangedChests();
+            }
+        }, Properties.saveDelay * 20L, Properties.saveDelay * 20L);
     }
 }

@@ -22,6 +22,5 @@ public class HelpCmd extends Cmd {
     public boolean execute() throws InsufficientPermissionsException, MissingOrIncorrectParametersException {
         dc.log("Help command");
         return true;
-    }
-    
+    }   
 }

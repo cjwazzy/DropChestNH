@@ -20,6 +20,8 @@ public class Properties {
     
     public static int itemLoopDelay = 20;
     
+    public static int saveDelay = 10;
+    
     public static int minecartFilterDistance = 1;
     static boolean minecartVerticalPickup = true;
     

@@ -31,7 +31,7 @@ public class Arguments {
     }
 
     public boolean hasKey(String key) {
-        return this.values.containsKey(key);
+        return this.values.containsKey(this.encode(key.toLowerCase()));
     }
 
     public void setValue(String key, String value) {
@@ -80,8 +80,8 @@ public class Arguments {
     }
 
     public String getValue(String key) {
-        if (this.values.containsKey(key)) {
-            return this.decode(this.values.get(key.toLowerCase()));
+        if (this.hasKey(key)) {
+            return this.decode(this.values.get(this.encode(key.toLowerCase())));
         }
         else {
             return null;
