@@ -8,3 +8,25 @@ commands:
     description: Dropchest commands
     aliases: [dc] 
     usage: "Alias: '/dc'. Type '/dropchest help' for more information."
+permissions:
+  dropchest.create.suck:
+    description: Allows user to create suck filters
+    default: false
+  dropchest.create.pull:
+    description: Allows user to create pull filters
+    default: false
+  dropchest.create.push:
+    description: Allows user to create push filters
+    default: false
+  dropchest.admin.basic:
+    description: Gives user access to basic admin commands (information about other chests only)
+    default: op
+  dropchest.admin.full:
+    description: Gives full admin access (editing/removing any chest)
+    default: op
+  dropchest.create.*:
+    description: Gives access to all filters
+    children:
+        dropchest.create.suck: true
+        dropchest.create.pull: true
+        dropchest.create.push: true

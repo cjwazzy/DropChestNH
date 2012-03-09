@@ -1,0 +1,12 @@
+# Delay between item pickup (in ticks)
+ItemLoopTimer: 20
+# Chest saving settings, either save instantly or on a timer (in seconds)
+SaveSettings:
+  SaveInstantly: true
+  AutosaveTimer: 300
+
+DropChestConfig:
+  MaxDistance: 7
+  MaxHeight: 3
+  MinecartPickupDistance: 1
+  MinecartVerticalPickup: true

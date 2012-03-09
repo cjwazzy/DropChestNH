@@ -15,6 +15,7 @@ import com.noheroes.dropchestnh.internals.Utils.Filter;
 import com.noheroes.dropchestnh.listeners.DCListener;
 import java.util.HashMap;
 import java.util.logging.Level;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,6 +23,9 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * @author PIETER
  */
+
+// TODO : Possible permisison issue when default create is true
+
 public class DropChestNH extends JavaPlugin {
     
     private DropChestHandler dcHandler;
@@ -45,6 +49,7 @@ public class DropChestNH extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(dcListener, this);
         instance = this;
         getCommand("dropchest").setExecutor(new DCCommandExecutor(this));
+        initialConfigLoad(this.getConfig());
         minidb = new MiniStorage(this, this.getDataFolder().getParent());
         dcHandler = new DropChestHandler(this, minidb);
         dcHandler.loadChests();
@@ -121,10 +126,32 @@ public class DropChestNH extends JavaPlugin {
     }
     
     private void startSaveLoop() {
-        saveLoopTaskID = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            public void run() {
-                dcHandler.saveChangedChests();
-            }
-        }, Properties.saveDelay * 20L, Properties.saveDelay * 20L);
+        if (Properties.saveInstantly) {
+            return;
+        }
+        else {
+            saveLoopTaskID = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                public void run() {
+                    dcHandler.saveChangedChests();
+                }
+            }, Properties.saveDelay * 20L, Properties.saveDelay * 20L);
+        }
+    }
+    
+    private void initialConfigLoad(FileConfiguration config) {
+        config.options().copyDefaults(true);
+        loadConfig(config);
+        this.saveConfig();
+        config.options().copyDefaults(false);
+    }
+
+    private void loadConfig(FileConfiguration config) {
+        Properties.itemLoopDelay = config.getInt("ItemLoopTimer");
+        Properties.maxDistance = config.getInt("DropChestConfig.MaxDistance");
+        Properties.maxHeight = config.getInt("DropChestConfig.MaxHeight");
+        Properties.minecartFilterDistance = config.getInt("DropChestConfig.MinecartPickupDistance");
+        Properties.minecartVerticalPickup = config.getBoolean("DropChestConfig.MinecartVerticalPickup");
+        Properties.saveInstantly = config.getBoolean("SaveSettings.SaveInstantly");
+        Properties.saveDelay = config.getInt("SaveSettings.AutosaveTimer");
     }
 }

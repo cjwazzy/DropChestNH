@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 /**
@@ -27,12 +28,22 @@ public class Utils {
     }
     // Temp set to true
     public static boolean hasPermission(CommandSender cs, String perm) {
-        return true;
+        if (perm == null) {
+            return true;
+        }
+        if (isAdmin(cs)) {
+            return true;
+        }
+        if (perm.equals(Properties.createChestPerm)) {
+            return (cs.hasPermission(Properties.createPullPerm) || 
+                    cs.hasPermission(Properties.createPushPerm) || cs.hasPermission(Properties.createSuckPerm));
+        }
+        return cs.hasPermission(perm);
     }
     
     // Temp set to op only
     public static boolean isAdmin(CommandSender cs) {
-        return cs.isOp();
+        return (cs.hasPermission(Properties.fullAdmin) || (cs instanceof ConsoleCommandSender) || cs.isOp());
     }
     
     public static String getChestInfoMsg(CommandSender cs, Integer chestID) {
@@ -62,6 +73,10 @@ public class Utils {
         // Empty filter
         if ((filterSet == null) || filterSet.isEmpty()) {
             msg = getColor(cs, Properties.chestFilterColor) + filter.toString() + ": None";
+        }
+        // All materials besides Material.AIR added
+        else if (filterSet.size() == (Material.values().length - 1)) {
+            msg = getColor(cs, Properties.chestFilterColor) + filter.toString() + ": All";
         }
         // Non-empty, grab material list from filter
         else {

@@ -15,15 +15,16 @@ public class Properties {
     private Properties () {}
     
     
-    public static int maxDistance = 6;      // TODO: CONFIG DRIVEN
-    public static int maxHeight = 3;        // TODO: CONFIG DRIVEN
+    public static int maxDistance;      
+    public static int maxHeight;      
     
-    public static int itemLoopDelay = 20;
+    public static int itemLoopDelay;
     
-    public static int saveDelay = 10;
+    public static int saveDelay;
+    public static boolean saveInstantly;
     
-    public static int minecartFilterDistance = 1;
-    static boolean minecartVerticalPickup = true;
+    public static int minecartFilterDistance;
+    public static boolean minecartVerticalPickup;
     
     public static final String miniFileName = "dropchest.mini";
     
@@ -34,7 +35,7 @@ public class Properties {
     public static final ChatColor chestFilterColor = ChatColor.DARK_AQUA;
     public static final ChatColor chestSlotsColor = ChatColor.DARK_PURPLE;
     public static final ChatColor chestFilledColor = ChatColor.RED;
-    
+
     public static final int chestsPerPage = 5;
     
     // Permissions  

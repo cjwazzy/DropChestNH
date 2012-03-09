@@ -175,7 +175,7 @@ public class DropChestHandler {
             playerList.offer(currentChestID);
             dcMapPlayerNameToID.put(player.getName().toLowerCase(), playerList);
         }
-        dcChangedChestID.add(currentChestID);
+        chestChanged(currentChestID);
         return true;
     }
     
@@ -264,7 +264,7 @@ public class DropChestHandler {
             // Any locs that were already adding to the map previously will be skipped by the method
             addLocToMap(chestID, loc, Filter.SUCK);
         }
-        dcChangedChestID.add(chestID);
+        chestChanged(chestID);
         return true;
     }
     
@@ -323,7 +323,7 @@ public class DropChestHandler {
         if ((filter == Filter.PULL) || (filter == Filter.PUSH)) {
             addChestToPullMap(chestID);
         }
-        dcChangedChestID.add(chestID);
+        chestChanged(chestID);
         return dcHashMap.get(chestID).updateFilter(mat.getId(), filter);
     }
     
@@ -364,11 +364,11 @@ public class DropChestHandler {
     }
     
     public void clearFilter(Integer chestID, Filter filter) throws MissingOrIncorrectParametersException {
-        if (chestID == null) {
+        if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
             throw new MissingOrIncorrectParametersException("That chest does not exist or is not a dropchest.");
         }
         getChest(chestID).clearFilter(filter);
-        dcChangedChestID.add(chestID);
+        chestChanged(chestID);
     }
     
     public void clearFilter(Location location, Filter filter) throws MissingOrIncorrectParametersException {
@@ -380,11 +380,11 @@ public class DropChestHandler {
     }
     
     public void addAllFilter(Integer chestID, Filter filter) throws MissingOrIncorrectParametersException {
-        if (chestID == null) {
+        if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
             throw new MissingOrIncorrectParametersException("That chest does not exist or is not a dropchest.");
         }
         getChest(chestID).addAllFilter(filter);
-        dcChangedChestID.add(chestID);
+        chestChanged(chestID);
     }
     
     public void addAllFilter(Location location, Filter filter) throws MissingOrIncorrectParametersException {
@@ -409,6 +409,19 @@ public class DropChestHandler {
             return false;
         }
         return dcHashMap.get(chestID).getOwner().equals(player.getName());
+    }
+    
+    public String getOwner(Location location) {
+        return getOwner(dcMapLocationToID.get(location));
+    }
+    
+    public String getOwner(Integer chestID) {
+        if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
+            return null;
+        }
+        else {
+            return getChest(chestID).getOwner();
+        }
     }
     
     public Integer getChestID(String identifier) {
@@ -517,7 +530,7 @@ public class DropChestHandler {
         }
         // Update chest
         getChest(chestID).setSuckDistance(newDistance);
-        dcChangedChestID.add(chestID);
+        chestChanged(chestID);
     }
     
     public void setSuckHeight(String identifier, int newHeight) {
@@ -559,7 +572,7 @@ public class DropChestHandler {
             }
         }
         getChest(chestID).setSuckHeight(newHeight);
-        dcChangedChestID.add(chestID);
+        chestChanged(chestID);
     }
     
     public ItemStack pickupItem(ItemStack is, Location location) {
@@ -805,5 +818,15 @@ public class DropChestHandler {
         ItemStack inputItem = is.clone();
         leftoverStack = cartInv.addItem(inputItem);
         return ((leftoverStack == null) ? null : leftoverStack.get(0));
+    }
+    
+    private void chestChanged(Integer chestID) {
+        if (Properties.saveInstantly) {
+            storage.save(getChest(chestID));
+            storage.write();
+        }
+        else {
+            dcChangedChestID.add(chestID);
+        }
     }
 }
