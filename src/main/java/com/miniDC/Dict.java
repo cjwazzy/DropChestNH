@@ -1,4 +1,4 @@
-package com.mini;
+package com.miniDC;
 
 public class Dict {
     // Main

@@ -1,4 +1,4 @@
-package com.mini;
+package com.miniDC;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

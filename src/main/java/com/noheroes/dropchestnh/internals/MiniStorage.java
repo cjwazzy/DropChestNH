@@ -4,8 +4,8 @@
  */
 package com.noheroes.dropchestnh.internals;
 
-import com.mini.Arguments;
-import com.mini.Mini;
+import com.miniDC.Arguments;
+import com.miniDC.Mini;
 import com.noheroes.dropchestnh.DropChestNH;
 import com.noheroes.dropchestnh.interfaces.StorageInterface;
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
-package com.mini;
+package com.miniDC;
 
-import com.mini.file.Manager;
+import com.miniDC.file.Manager;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
