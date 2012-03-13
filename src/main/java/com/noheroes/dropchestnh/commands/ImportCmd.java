@@ -45,7 +45,7 @@ public class ImportCmd extends Cmd {
         Properties.saveInstantly = false;
         File yamlFile = new File(dc.getDataFolder().getPath(), filename);
         if (!yamlFile.exists()) {
-            throw new MissingOrIncorrectParametersException("The file " + filename + " does not exist, please ensure it is in the dropchest directory");
+            throw new MissingOrIncorrectParametersException(filename + " does not exist, please ensure it is in the dropchest directory");
         }
         try {
             FileReader reader = new FileReader(yamlFile);
