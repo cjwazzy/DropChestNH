@@ -52,7 +52,7 @@ public class DropChestEditor {
             case ADD_CHEST:
                 // Add chest
                 try {
-                    dc.getDcHandler().addChest(block, player, chestName);
+                    dc.getDcHandler().addChest(block, player.getName(), chestName);
                     if (chestName == null) {
                         player.sendMessage("Dropchest added");
                     }
@@ -106,6 +106,13 @@ public class DropChestEditor {
                     msg = Utils.getChestFilterInfoMsg(player, chestID, f);
                     player.sendMessage(msg);
                 }
+                try {
+                    if (dc.getDcHandler().getWarnFull(chestID)) {
+                        player.sendMessage("This chest has almost full warning turned on with a threshold");
+                        player.sendMessage("of " + dc.getDcHandler().getWarnThreshold(chestID) + "% and a delay of " + dc.getDcHandler().getWarnDelay(chestID) + " minutes");
+                    }
+                    // This exception should never be thrown in this case
+                } catch (MissingOrIncorrectParametersException ex) {}
                 return true;
         }
         return false;

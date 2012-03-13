@@ -27,7 +27,7 @@ public class ListAllCmd extends Cmd {
         errorCheck();
         String msg = "Number of chests owned by each player: ";
         boolean first = true;
-        HashMap<String, Integer> playerList = dc.getDcHandler().getAllChestList();
+        HashMap<String, Integer> playerList = dch.getAllChestList();
         for (Entry<String, Integer> entry : playerList.entrySet()) {
             if (!first) {
                 msg += ", ";

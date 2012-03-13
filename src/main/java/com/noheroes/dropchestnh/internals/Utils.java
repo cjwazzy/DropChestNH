@@ -6,9 +6,11 @@ package com.noheroes.dropchestnh.internals;
 
 import com.noheroes.dropchestnh.DropChestNH;
 import java.util.Set;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -49,9 +51,9 @@ public class Utils {
     public static String getChestInfoMsg(CommandSender cs, Integer chestID) {
         String msg;
         DropChestNH dc = DropChestNH.getInstance();
-        msg = getColor(cs, Properties.chestIDColor) + "Chest #" + chestID;
+        msg = getColor(cs, Properties.chestIDColor) + "#" + chestID;
         if (dc.getDcHandler().getChestName(chestID) != null) {
-            msg += getColor(cs, Properties.chestNameColor) + " - " + dc.getDcHandler().getChestName(chestID);
+            msg += getColor(cs, Properties.chestNameColor) + " " + dc.getDcHandler().getChestName(chestID);
         }
         Location loc = dc.getDcHandler().getChestLocation(chestID);
         msg += getColor(cs, Properties.chestLocColor) + " X:" + loc.getBlockX() + " Z:" + loc.getBlockZ() + " Y:" + loc.getBlockY();
@@ -61,8 +63,8 @@ public class Utils {
             }
         }
         InventoryData invData = dc.getDcHandler().getInventoryData(chestID);
-        msg += getColor(cs, Properties.chestSlotsColor) + " Slots:" + invData.getFilledSlots() + "/" + invData.getTotalSlots();
-        msg += getColor(cs, Properties.chestFilledColor) + " Filled:" + invData.getPercentageUsed() + "%";       
+        msg += getColor(cs, Properties.chestSlotsColor) + " " + invData.getFilledSlots() + "/" + invData.getTotalSlots();
+        msg += getColor(cs, Properties.chestFilledColor) + " " + invData.getPercentageUsed() + "%";       
         return msg;
     }
     
@@ -104,5 +106,40 @@ public class Utils {
         else {
             return "";
         }
+    }
+    
+    public static String[] locToString(Location location) {
+        String[] locStr = new String[4];
+        locStr[0] = location.getWorld().getName();
+        locStr[1] = String.valueOf(location.getBlockX());
+        locStr[2] = String.valueOf(location.getBlockY());
+        locStr[3] = String.valueOf(location.getBlockZ());
+        return locStr;
+    }
+    
+    public static Location stringToLoc(String locStr[]) {
+        // locStr being equal to null is not uncommon, it happens any time there is no secondary location
+        if (locStr == null) {
+            return null;
+        }
+        // Location string should be length 4 or it is invalid
+        if (locStr.length != 4) {
+            return null;
+        }
+        World world = Bukkit.getWorld(locStr[0]);
+        if (world == null) {
+            return null;
+        }
+        Integer xLoc;
+        Integer yLoc;
+        Integer zLoc;
+        try {
+            xLoc = Integer.valueOf(locStr[1]);
+            yLoc = Integer.valueOf(locStr[2]);
+            zLoc = Integer.valueOf(locStr[3]);
+        } catch (NumberFormatException ex) {
+            return null;
+        }       
+        return new Location(world, xLoc, yLoc, zLoc);
     }
 }

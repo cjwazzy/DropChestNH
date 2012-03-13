@@ -66,14 +66,23 @@ public class DCCommandExecutor implements CommandExecutor {
             else if (com.equalsIgnoreCase("setheight") || com.equalsIgnoreCase("sh")) {
                 cmd = new SetHeightCmd(sender, args);
             }
+            else if (com.equalsIgnoreCase("setname") || com.equalsIgnoreCase("sn")) {
+                cmd = new SetNameCmd(sender, args);
+            }
+            else if (com.equalsIgnoreCase("warnfull") || com.equalsIgnoreCase("wf")) {
+                cmd = new WarnFullCmd(sender, args);
+            }
+            else if (com.equalsIgnoreCase("import")) {
+                cmd = new ImportCmd(sender, args);
+            }
             else {
                 cmd = new HelpCmd(sender, args);
             }
             return cmd.execute();
         } catch (InsufficientPermissionsException ex) {
-            dc.log("Exception caught: " + ex.getMessage());
+            sender.sendMessage(ex.getMessage());
         } catch (MissingOrIncorrectParametersException ex) {
-            dc.log("Exception caught: " + ex.getMessage());
+            sender.sendMessage(ex.getMessage());
         }
         return true;
     }

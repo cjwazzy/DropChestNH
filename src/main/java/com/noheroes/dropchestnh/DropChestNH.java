@@ -24,8 +24,6 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author PIETER
  */
 
-// TODO : Possible permisison issue when default create is true
-
 public class DropChestNH extends JavaPlugin {
     
     private DropChestHandler dcHandler;
@@ -40,8 +38,10 @@ public class DropChestNH extends JavaPlugin {
     @Override
     public void onDisable() {
         dcHandler.saveChangedChests();
-        this.getServer().getScheduler().cancelTask(itemLoopTaskID);
-        this.getServer().getScheduler().cancelTask(saveLoopTaskID);
+        if (itemLoopTaskID != null)
+            this.getServer().getScheduler().cancelTask(itemLoopTaskID);
+        if (saveLoopTaskID != null)
+            this.getServer().getScheduler().cancelTask(saveLoopTaskID);
     }
     
     @Override
@@ -50,7 +50,7 @@ public class DropChestNH extends JavaPlugin {
         instance = this;
         getCommand("dropchest").setExecutor(new DCCommandExecutor(this));
         initialConfigLoad(this.getConfig());
-        minidb = new MiniStorage(this, this.getDataFolder().getParent());
+        minidb = new MiniStorage(this, this.getDataFolder().getPath());
         dcHandler = new DropChestHandler(this, minidb);
         dcHandler.loadChests();
         startItemLoop();

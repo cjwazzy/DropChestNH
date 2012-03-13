@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
  * @author PIETER
  */
 public class DropChestObj {
+    // These vars should be stored
     private Location primaryLocation;
     private Location secondaryLocation;
     private Integer chestID;
@@ -28,6 +29,11 @@ public class DropChestObj {
     private Set<Integer> pushFilter;
     private Integer chestSuckDistance;
     private Integer chestSuckHeight;
+    private boolean almostFullWarning;
+    private Integer almostFullWarningThreshold;
+    private Integer warningDelay;
+    // These vars do not need to be stored
+    private Long lastWarningTime;
     
     
     protected DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation, Location secondaryLocation) {
@@ -42,6 +48,10 @@ public class DropChestObj {
         this.pushFilter = new LinkedHashSet<Integer>();
         this.chestSuckDistance = 0;
         this.chestSuckHeight = 0;
+        this.almostFullWarning = false;
+        this.lastWarningTime = System.currentTimeMillis();
+        this.warningDelay = Properties.defaultWarningDelay;
+        this.almostFullWarningThreshold = Properties.defaultAlmostFullWarningThreshold;
     }
     
     protected DropChestObj(int chestID, String ownerName, String chestName, Location primaryLocation) {
@@ -74,6 +84,10 @@ public class DropChestObj {
     
     protected String getName() {
         return chestName;
+    }
+    
+    protected void setName(String chestName) {
+        this.chestName = chestName;
     }
     
     protected String getOwner() {
@@ -166,6 +180,50 @@ public class DropChestObj {
         if (suckHeight >= 0)
             this.chestSuckHeight = suckHeight;
     }
+       
+    protected boolean toggleAlmostFullWarning() {
+        this.almostFullWarning = !this.almostFullWarning;
+        return this.almostFullWarning;
+    }
+    
+    protected void setAlmostFullWarning(boolean warning) {
+        this.almostFullWarning = warning;
+    }
+    
+    protected void setAlmostFullThreshold(Integer threshold) {
+        if ((threshold < 0) || (threshold > 99)) {
+            return;
+        }
+        this.almostFullWarningThreshold = threshold;
+    }
+    
+    protected Integer getAlmostFullThreshold() {
+        return this.almostFullWarningThreshold;
+    }
+    
+    protected boolean getAlmostFullWarning() {
+        return this.almostFullWarning;
+    }
+    
+    protected boolean warnPlayer() {
+        // Enough time must have elapsed and warning must be turned on for this to return true
+        return((Math.abs(lastWarningTime - System.currentTimeMillis()) > toMillis(warningDelay)) && this.almostFullWarning);
+    }
+    
+    protected void playerWasWarned() {
+        lastWarningTime = System.currentTimeMillis();
+    }
+    
+    protected void setWarnDelay(Integer delay) {
+        if (delay <= 0) {
+            return;
+        }
+        this.warningDelay = delay;
+    }
+    
+    protected Integer getWarnDelay() {
+        return this.warningDelay;
+    }
 
     private InventoryData getInvData(Inventory inv) {
         if (inv == null) {
@@ -187,5 +245,9 @@ public class DropChestObj {
             }
         }
         return new InventoryData(filledSlots, freeSlots, usedSpace);
+    }
+    
+    private Long toMillis(Integer minutes) {
+        return minutes * 60L * 1000L;
     }
 }

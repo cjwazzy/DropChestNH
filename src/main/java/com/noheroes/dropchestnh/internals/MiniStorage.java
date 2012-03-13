@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  *
@@ -35,6 +36,9 @@ public class MiniStorage implements StorageInterface {
     private static final String ownerNameKey = "chestowner";
     private static final String chestSuckDistance = "suckdistance";
     private static final String chestSuckHeight = "suckheight";
+    private static final String almostFullWarning = "warnfull";
+    private static final String almostFullWarningThreshold = "warnthresh";
+    private static final String almostFullWarningDelay = "warndelay";
     private Mini minidb;
     
     public MiniStorage(DropChestNH dc, String folder) {
@@ -113,13 +117,17 @@ public class MiniStorage implements StorageInterface {
         }
         String[] locStr;
         // Add primary location
-        locStr = locToString(dropchest.getPrimaryLocation());
+        locStr = Utils.locToString(dropchest.getPrimaryLocation());
         arg.setValue(primaryLocKey, locStr);
         // Add secondary location if it exists
         if (dropchest.getSecondaryLocation() != null) {
-            locStr = locToString(dropchest.getSecondaryLocation());
+            locStr = Utils.locToString(dropchest.getSecondaryLocation());
             arg.setValue(secondaryLocKey, locStr);
         }
+        // Add chest warning info
+        arg.setValue(almostFullWarning, dropchest.getAlmostFullWarning());
+        arg.setValue(almostFullWarningThreshold, dropchest.getAlmostFullThreshold());
+        arg.setValue(almostFullWarningDelay, dropchest.getWarnDelay());
         // Add owner's name
         arg.setValue(ownerNameKey, dropchest.getOwner());
         // Add chest suck distance and suck height
@@ -139,9 +147,9 @@ public class MiniStorage implements StorageInterface {
         String ownerName = arg.getValue(ownerNameKey);
         String chestName = arg.getValue(chestNameKey);
         String locStr[] = arg.getArray(primaryLocKey);
-        Location primaryLocation = stringToLoc(locStr);
+        Location primaryLocation = Utils.stringToLoc(locStr);
         locStr = arg.getArray(secondaryLocKey);
-        Location secondaryLocation = stringToLoc(locStr);
+        Location secondaryLocation = Utils.stringToLoc(locStr);
         List<Integer> suckList = stringArrayToIntegerList(arg.getArray(suckFilterKey));
         List<Integer> pullList = stringArrayToIntegerList(arg.getArray(pullFilterKey));
         List<Integer> pushList = stringArrayToIntegerList(arg.getArray(pushFilterKey));
@@ -159,11 +167,31 @@ public class MiniStorage implements StorageInterface {
             dc.log(Level.WARNING, "Error converting chest suck height to int, setting to 0");
             suckHeight = 0;
         }
+        boolean warnFull = arg.getBoolean(almostFullWarning);
+        Integer warnThreshold;
+        Integer warnDelay;
+        try {
+            warnThreshold = arg.getInteger(almostFullWarningThreshold);
+            warnDelay = arg.getInteger(almostFullWarningDelay);
+        } catch (NumberFormatException ex) {
+            dc.log(Level.WARNING, "Error converting chest warning information back to int, using defaults");
+            warnThreshold = Properties.defaultAlmostFullWarningThreshold;
+            warnDelay = Properties.defaultWarningDelay;
+        }
+        
+        if (primaryLocation == null) {
+            dc.log(Level.WARNING, "Error loading a chest, primary location is not correct");
+            return null;
+        }
+        
         // Create dropchest
         DropChestObj dropchest = new DropChestObj(chestID, ownerName, chestName, primaryLocation, secondaryLocation);
         // Set values not passed to constructor
         dropchest.setSuckDistance(suckDistance);
         dropchest.setSuckHeight(suckHeight);
+        dropchest.setWarnDelay(warnDelay);
+        dropchest.setAlmostFullThreshold(warnThreshold);
+        dropchest.setAlmostFullWarning(warnFull);
         if (suckList != null) {
             for (Integer matID : suckList) {
                 dropchest.updateFilter(matID, Utils.Filter.SUCK);
@@ -197,39 +225,5 @@ public class MiniStorage implements StorageInterface {
             }
         }
         return intList;
-    }
-    
-    private String[] locToString(Location location) {
-        String[] locStr = new String[4];
-        locStr[0] = location.getWorld().getName();
-        locStr[1] = String.valueOf(location.getBlockX());
-        locStr[2] = String.valueOf(location.getBlockY());
-        locStr[3] = String.valueOf(location.getBlockZ());
-        return locStr;
-    }
-    
-    private Location stringToLoc(String locStr[]) {
-        // locStr being equal to null is not uncommon, it happens any time there is no secondary location
-        if (locStr == null) {
-            return null;
-        }
-        // Location string should be length 4 or it is invalid
-        if (locStr.length != 4) {
-            dc.log(Level.SEVERE, "Error getting location out of string, string is not correct length");
-            return null;
-        }
-        World world = Bukkit.getWorld(locStr[0]);
-        Integer xLoc;
-        Integer yLoc;
-        Integer zLoc;
-        try {
-            xLoc = Integer.valueOf(locStr[1]);
-            yLoc = Integer.valueOf(locStr[2]);
-            zLoc = Integer.valueOf(locStr[3]);
-        } catch (NumberFormatException ex) {
-            dc.log(Level.SEVERE, "Error getting location out of string, coordinates are not integers");
-            return null;
-        }
-        return new Location(world, xLoc, yLoc, zLoc);
     }
 }

@@ -12,24 +12,19 @@ import org.bukkit.command.CommandSender;
  *
  * @author PIETER
  */
-public class RemoveChestCmd extends Cmd {
+public class SetNameCmd extends Cmd {
     
-    public RemoveChestCmd (CommandSender cs, String args[]) {
-        super (cs, args);
-        minArgs = 2;
+    public SetNameCmd(CommandSender cs, String[] args) {
+        super(cs, args);
+        minArgs = 3;
     }
     
     @Override
     public boolean execute() throws InsufficientPermissionsException, MissingOrIncorrectParametersException {
         errorCheck();
-        // Chest doesn't exist
         chestExistCheck(args[1]);
-        // Check for admin
         ownershipCheck(args[1]);
-        // Remove chest
-        if (dch.removeChest(args[1])) {
-            cs.sendMessage("Chest " + args[1] + " has been successfully removed");
-        }
+        dch.setName(args[1], args[2]);
         return true;
     }
 }

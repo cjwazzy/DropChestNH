@@ -27,6 +27,8 @@ public class Properties {
     public static boolean minecartVerticalPickup;
     
     public static final String miniFileName = "dropchest.mini";
+    public static final int defaultAlmostFullWarningThreshold = 85;
+    public static final int defaultWarningDelay = 30;                       // In minutes
     
     // Colors
     public static final ChatColor chestIDColor = ChatColor.AQUA;
@@ -36,14 +38,14 @@ public class Properties {
     public static final ChatColor chestSlotsColor = ChatColor.DARK_PURPLE;
     public static final ChatColor chestFilledColor = ChatColor.RED;
 
-    public static final int chestsPerPage = 5;
+    public static final int chestsPerPage = 7;
     
     // Permissions  
     public static final String createSuckPerm = "dropchest.create.suck";
     public static final String createPullPerm = "dropchest.create.pull";
     public static final String createPushPerm = "dropchest.create.push";
-    public static final String basicAdmin = "dropchest.admin.basic";    // Only permission to look at chests
-    public static final String fullAdmin = "dropchest.admin.full";      // All permissions
+    public static final String basicAdmin = "dropchest.admin.basic";        // Only permission to look at chests
+    public static final String fullAdmin = "dropchest.admin.full";          // All permissions
     
-    public static final String createChestPerm = "dropchestCreatePerm";   // Not an actual permission, only use for internal permission handling, do not change
+   public static final String createChestPerm = "dropchestCreatePerm";      // Not an actual permission, only use for internal permission handling, do not change
 }

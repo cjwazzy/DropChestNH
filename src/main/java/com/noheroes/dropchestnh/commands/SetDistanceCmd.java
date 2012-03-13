@@ -7,7 +7,6 @@ package com.noheroes.dropchestnh.commands;
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Properties;
-import com.noheroes.dropchestnh.internals.Utils;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -36,7 +35,7 @@ public class SetDistanceCmd extends Cmd {
         if ((distance < 0 ) || (distance > Properties.maxDistance)) {
             throw new MissingOrIncorrectParametersException("The distance must be a non-negative number between 0 and " + Properties.maxDistance);
         }
-        dc.getDcHandler().setSuckDistance(args[1], distance);
+        dch.setSuckDistance(args[1], distance);
         cs.sendMessage("Suck distance for chest " + args[1] + " changed to " + distance); 
         return true;
     }

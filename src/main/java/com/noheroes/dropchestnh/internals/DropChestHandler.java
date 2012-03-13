@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -27,6 +28,8 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author PIETER
  */
+
+// TODO: Clean up use of dcHashMap.get and replace with getChest
 
 public class DropChestHandler {
     // Stores all dropchests using a unique ID as key
@@ -112,13 +115,13 @@ public class DropChestHandler {
         storage.write();
     }
     
-    public boolean addChest(Block chest, Player player) throws MissingOrIncorrectParametersException {
-        return addChest(chest, player, null);
+    public Integer addChest(Block chest, String ownerName) throws MissingOrIncorrectParametersException {
+        return addChest(chest, ownerName, null);
     }
     
-    public boolean addChest(Block chest, Player player, String chestName) throws MissingOrIncorrectParametersException {
+    public Integer addChest(Block chest, String ownerName, String chestName) throws MissingOrIncorrectParametersException {
         if (!chest.getType().equals(Material.CHEST)) {
-            return false;
+            return null;
         }
         if (dcMapLocationToID.containsKey(chest.getLocation())) {
             throw new MissingOrIncorrectParametersException("That is already a dropchest");
@@ -153,7 +156,7 @@ public class DropChestHandler {
                 secondaryLocation = chest.getLocation();
             }
         }
-        dropChest = new DropChestObj(currentChestID, player.getName(), chestName, primaryLocation, secondaryLocation);
+        dropChest = new DropChestObj(currentChestID, ownerName, chestName, primaryLocation, secondaryLocation);
         // Add chest to hashmap
         dcHashMap.put(currentChestID, dropChest);
         // Add chest name mapping if applicable
@@ -167,16 +170,16 @@ public class DropChestHandler {
             dcMapLocationToID.put(secondaryLocation, currentChestID);
         }
         // Add chest ID to list of chests owned by player
-        if (dcMapPlayerNameToID.containsKey(player.getName().toLowerCase())) {
-            dcMapPlayerNameToID.get(player.getName().toLowerCase()).offer(currentChestID);
+        if (dcMapPlayerNameToID.containsKey(ownerName.toLowerCase())) {
+            dcMapPlayerNameToID.get(ownerName.toLowerCase()).offer(currentChestID);
         }
         else {
             LinkedList<Integer> playerList = new LinkedList<Integer>();
             playerList.offer(currentChestID);
-            dcMapPlayerNameToID.put(player.getName().toLowerCase(), playerList);
+            dcMapPlayerNameToID.put(ownerName.toLowerCase(), playerList);
         }
         chestChanged(currentChestID);
-        return true;
+        return currentChestID;
     }
     
     // Owner or permission handling for removal should be done before calling these methods
@@ -268,6 +271,117 @@ public class DropChestHandler {
         return true;
     }
     
+    public void setName(String identifier, String chestName) throws MissingOrIncorrectParametersException {
+        setName(getChestID(identifier), chestName);
+    }
+    
+    public void setName(Integer chestID, String chestName) throws MissingOrIncorrectParametersException {
+        if (chestID == null) {
+            throw new MissingOrIncorrectParametersException("That chest does not exist");
+        }
+        if (chestName == null) {
+            throw new MissingOrIncorrectParametersException("You must specify a chest name");
+        }
+        // Names must be unique
+        if (dcMapChestNameToID.containsKey(chestName)) {
+            throw new MissingOrIncorrectParametersException("That chest name is already in use");
+        }
+        // Remove old chest name from hashmap if it exists
+        if (getChest(chestID).getName() != null) {
+            dcMapChestNameToID.remove(getChest(chestID).getName());
+        }
+        // Rename chest and add new name to hashmap
+        getChest(chestID).setName(chestName);
+        dcMapChestNameToID.put(chestName, chestID);
+        chestChanged(chestID);
+    }
+    
+    public boolean getWarnFull(String identifier) throws MissingOrIncorrectParametersException {
+        return getWarnFull(getChestID(identifier));
+    }
+    
+    public boolean getWarnFull(Integer chestID) throws MissingOrIncorrectParametersException {
+        if (chestID == null) {
+            throw new MissingOrIncorrectParametersException("That chest does not exist"); 
+        }
+        return getChest(chestID).getAlmostFullWarning();
+    }
+    
+    public Integer getWarnDelay(String identifier) throws MissingOrIncorrectParametersException {
+        return getWarnDelay(getChestID(identifier));
+    }
+    
+    public Integer getWarnDelay(Integer chestID) throws MissingOrIncorrectParametersException {
+        if (chestID == null) {
+            throw new MissingOrIncorrectParametersException("That chest does not exist"); 
+        }
+        return getChest(chestID).getWarnDelay();
+    }
+    
+    public Integer getWarnThreshold(String identifier) throws MissingOrIncorrectParametersException {
+        return getWarnThreshold(getChestID(identifier));
+    }
+    
+    public Integer getWarnThreshold(Integer chestID) throws MissingOrIncorrectParametersException {
+        if (chestID == null) {
+            throw new MissingOrIncorrectParametersException("That chest does not exist"); 
+        }
+        return getChest(chestID).getAlmostFullThreshold();
+    }
+    
+    public void setWarning(String identifier, String threshold, String warnDelay) throws MissingOrIncorrectParametersException {
+        setWarning(getChestID(identifier), threshold, warnDelay);
+    }
+    
+    public void setWarning(String identifier, String threshold) throws MissingOrIncorrectParametersException {
+        setWarning(getChestID(identifier), threshold, null);
+    }
+    
+    public void setWarning(Integer chestID, String threshold, String warnDelay) throws MissingOrIncorrectParametersException {
+        if (chestID == null) {
+            throw new MissingOrIncorrectParametersException("That chest does not exist"); 
+        }
+        if (threshold != null) {
+            Integer thresholdInt;
+            try {
+                thresholdInt = Integer.valueOf(threshold);
+            } catch (NumberFormatException ex) {
+                throw new MissingOrIncorrectParametersException("That is not a valid threshold, it should be a number between 0 and 100");
+            }
+            if ((thresholdInt < 0) || (thresholdInt > 99)) {
+                throw new MissingOrIncorrectParametersException("That is not a valid threshold, it should be a number between 0 and 100");
+            }
+            getChest(chestID).setAlmostFullThreshold(thresholdInt);
+        }
+        if (warnDelay != null) {
+            Integer warnDelayInt;
+            try {
+                warnDelayInt = Integer.valueOf(warnDelay);
+            } catch (NumberFormatException ex) {
+                throw new MissingOrIncorrectParametersException("That is not a valid warning delay, it should be a number greater than zero");
+            }
+            if (warnDelayInt <= 0) {
+                throw new MissingOrIncorrectParametersException("That is not a valid warning delay, it should be a number greater than zero");
+            }
+            getChest(chestID).setWarnDelay(warnDelayInt);
+        }
+        getChest(chestID).setAlmostFullWarning(true);
+        chestChanged(chestID);
+    }
+    
+    public boolean toggleWarning(String identifier) throws MissingOrIncorrectParametersException {
+        return toggleWarning(getChestID(identifier));
+    }
+    
+    public boolean toggleWarning(Integer chestID) throws MissingOrIncorrectParametersException {
+        if (chestID == null) {
+            throw new MissingOrIncorrectParametersException("That chest does not exist");
+        }
+        boolean bool = getChest(chestID).toggleAlmostFullWarning();
+        chestChanged(chestID);
+        return bool;
+    }
+    
     // Adds item to chest with ID chestID.  Returns anything that didn't fit, or null if everything fit
     public ItemStack addItem(Integer chestID, ItemStack item) {
         if ((chestID == null) || (item == null)) {
@@ -298,7 +412,14 @@ public class DropChestHandler {
                 }
             }
         }
-        return ((leftOverItems == null) ? null : leftOverItems.get(0));
+        if ((leftOverItems == null) || (leftOverItems.get(0) == null) || (leftOverItems.get(0).getAmount() == 0)) {
+            checkFullWarning(chestID, false);
+            return null;
+        }
+        else {
+            checkFullWarning(chestID, true);
+            return leftOverItems.get(0);
+        }
     }
     
     public ItemStack addItem(Location location, ItemStack item) {
@@ -329,11 +450,15 @@ public class DropChestHandler {
     
     // Attempts to find the chestID by matching indentifier against or chestID or chest name
     public boolean updateFilter(String mat, String identifier, Filter filter) throws MissingOrIncorrectParametersException {
+        return updateFilter(mat, getChestID(identifier), filter);
+    }
+    
+    public boolean updateFilter(String mat, Integer chestID, Filter filter) throws MissingOrIncorrectParametersException {
         Material material = getMaterialFromString(mat);
         if (material == null) {
             throw new MissingOrIncorrectParametersException("Material " + mat + " does not exist");
         }
-        return updateFilter(material, getChestID(identifier), filter);
+        return updateFilter(material, chestID, filter);
     }
      
     public Material getMaterialFromString(String mat) {
@@ -827,6 +952,30 @@ public class DropChestHandler {
         }
         else {
             dcChangedChestID.add(chestID);
+        }
+    }
+    
+    private void checkFullWarning(Integer chestID, boolean couldNotPickup) {
+        if (!getChest(chestID).warnPlayer()) {
+            return;
+        }
+        // Could not pick up an item, attempt to message player
+        if (couldNotPickup) {
+            Player player = Bukkit.getPlayer(getChest(chestID).getOwner());
+            if ((player != null) && player.isOnline()) {
+                player.sendMessage("Your dropchest #" + chestID + " is full and could not pick up an item");
+                getChest(chestID).playerWasWarned();
+            }
+        }
+        else {
+            Integer filled = getChest(chestID).getInventoryData().getPercentageUsed();
+            if (filled > getChest(chestID).getAlmostFullThreshold()) {
+                Player player = Bukkit.getPlayer(getChest(chestID).getOwner());
+                if ((player != null) && player.isOnline()) {                
+                    player.sendMessage("Your dropchest #" + chestID + " is " + filled + "% full");
+                    getChest(chestID).playerWasWarned();
+                }
+            }
         }
     }
 }

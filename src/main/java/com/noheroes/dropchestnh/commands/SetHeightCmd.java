@@ -35,7 +35,7 @@ public class SetHeightCmd extends Cmd {
         if ((height < 0 ) || (height > Properties.maxHeight)) {
             throw new MissingOrIncorrectParametersException("The distance must be a non-negative number between 0 and " + Properties.maxHeight);
         }
-        dc.getDcHandler().setSuckHeight(args[1], height);
+        dch.setSuckHeight(args[1], height);
         cs.sendMessage("Suck height for chest " + args[1] + " changed to " + height); 
         return true;
     }

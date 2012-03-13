@@ -7,7 +7,6 @@ package com.noheroes.dropchestnh.commands;
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Properties;
-import com.noheroes.dropchestnh.internals.Utils;
 import com.noheroes.dropchestnh.internals.Utils.EditMode;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
 import org.bukkit.command.CommandSender;
@@ -25,10 +24,13 @@ public class FilterCmd extends Cmd {
         switch (filter) {
             case SUCK:
                 permission = Properties.createSuckPerm;
+                break;
             case PULL:
                 permission = Properties.createPullPerm;
+                break;
             case PUSH:
                 permission = Properties.createPullPerm;
+                break;
         }
     }
     
@@ -55,20 +57,20 @@ public class FilterCmd extends Cmd {
         for (int i = 2; i < args.length; i++) {
             try {
                 if (args[i].equalsIgnoreCase("all")) {
-                    dc.getDcHandler().addAllFilter(args[1], filter);
+                    dch.addAllFilter(args[1], filter);
                     cs.sendMessage("Everything added to filter");
                 }
                 else if (args[i].equalsIgnoreCase("clear")) {
-                    dc.getDcHandler().clearFilter(args[1], filter);
+                    dch.clearFilter(args[1], filter);
                     cs.sendMessage("Filter cleared");
                 }
                 else {
                     // Update filter.  getMaterialFromString call is used to turn numbers into enums when giving feedback
-                    if (dc.getDcHandler().updateFilter(args[i], args[1], filter)) {
-                        cs.sendMessage(dc.getDcHandler().getMaterialFromString(args[i]).toString() + " has been added to the " + filter.toString() + " filter of chest " + args[1]);
+                    if (dch.updateFilter(args[i], args[1], filter)) {
+                        cs.sendMessage(dch.getMaterialFromString(args[i]).toString() + " has been added to the " + filter.toString() + " filter of chest " + args[1]);
                     }
                     else {
-                        cs.sendMessage(dc.getDcHandler().getMaterialFromString(args[i]).toString() + " has been removed from the " + filter.toString() + " filter of chest " + args[1]);
+                        cs.sendMessage(dch.getMaterialFromString(args[i]).toString() + " has been removed from the " + filter.toString() + " filter of chest " + args[1]);
                     }
                 }
             // Catch exceptions here because we want to finish the loop in case valid materials are entered as well

@@ -7,6 +7,7 @@ package com.noheroes.dropchestnh.commands;
 import com.noheroes.dropchestnh.DropChestNH;
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
+import com.noheroes.dropchestnh.internals.DropChestHandler;
 import com.noheroes.dropchestnh.internals.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,6 +21,7 @@ abstract public class Cmd {
     String[] args;
     Player player;
     DropChestNH dc;
+    DropChestHandler dch;
     
     String permission = null;   // null permission defaults to permitted
     int minArgs = 1;    // With a value of 1 this will pass errorCheck() by default unless it is changed
@@ -28,6 +30,7 @@ abstract public class Cmd {
         this.cs = cs;
         this.args = args;
         dc = DropChestNH.getInstance();
+        dch = dc.getDcHandler();
     }
     
     protected void getPlayer() throws InsufficientPermissionsException {
@@ -49,7 +52,7 @@ abstract public class Cmd {
     protected void ownershipCheck(String identifier) throws InsufficientPermissionsException {
         if (!Utils.isAdmin(cs)) {
             getPlayer();
-            if (!dc.getDcHandler().ownsChest(identifier, player)) {            
+            if (!dch.ownsChest(identifier, player)) {            
                 throw new InsufficientPermissionsException("You do not own this chest");
             }
         }
@@ -58,14 +61,14 @@ abstract public class Cmd {
     protected void ownershipCheck(String identifier, String permission)  throws InsufficientPermissionsException {
         if (!Utils.hasPermission(cs, permission)) {
             getPlayer();
-            if (!dc.getDcHandler().ownsChest(identifier, player)) {            
+            if (!dch.ownsChest(identifier, player)) {            
                 throw new InsufficientPermissionsException("You do not own this chest");
             }
         }        
     }
     
     protected void chestExistCheck(String identifier) throws MissingOrIncorrectParametersException {
-        if (!dc.getDcHandler().chestExists(identifier)) {
+        if (!dch.chestExists(identifier)) {
             throw new MissingOrIncorrectParametersException("This chest does not exist");
         }        
     }

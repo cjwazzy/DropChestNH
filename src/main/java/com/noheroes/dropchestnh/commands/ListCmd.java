@@ -63,7 +63,7 @@ public class ListCmd extends Cmd {
     
     // Shows a specific page of the chest list owned by playerName to cs
     private void showListPage(String playerName, Integer pageNr, CommandSender cs) throws MissingOrIncorrectParametersException {
-        LinkedList<Integer> chestList = dc.getDcHandler().getPlayerChestList(playerName);
+        LinkedList<Integer> chestList = dch.getPlayerChestList(playerName);
         // No chests owned by this player
         if ((chestList == null) || chestList.isEmpty()) {
             if (playerName.equals(cs.getName())) {

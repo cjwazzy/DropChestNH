@@ -34,7 +34,7 @@ public class InfoCmd extends Cmd {
             chestExistCheck(args[1]);
             // Check if sender has basic admin permissions or owns the chest
             ownershipCheck(args[1], Properties.basicAdmin);
-            Integer chestID = dc.getDcHandler().getChestID(args[1]);
+            Integer chestID = dch.getChestID(args[1]);
             String msg;
             // Display basis chest info
             msg = Utils.getChestInfoMsg(cs, chestID);
@@ -43,6 +43,10 @@ public class InfoCmd extends Cmd {
             for (Filter f : Filter.values()) {
                 msg = Utils.getChestFilterInfoMsg(cs, chestID, f);
                 cs.sendMessage(msg);
+            }
+            if (dch.getWarnFull(chestID)) {
+                cs.sendMessage("This chest has almost full warning turned on with a threshold");
+                cs.sendMessage("of " + dch.getWarnThreshold(chestID) + "% and a delay of " + dch.getWarnDelay(chestID) + " minutes");
             }
         }
         return true;
