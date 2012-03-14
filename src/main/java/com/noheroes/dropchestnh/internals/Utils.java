@@ -5,6 +5,7 @@
 package com.noheroes.dropchestnh.internals;
 
 import com.noheroes.dropchestnh.DropChestNH;
+import java.util.List;
 import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -28,6 +29,10 @@ public class Utils {
     public static enum EditMode {
         ADD_CHEST, FILTER, INFO
     }
+    
+    public static enum MsgType {
+        INFO, ERROR, NEXT_STEP
+    }
     // Temp set to true
     public static boolean hasPermission(CommandSender cs, String perm) {
         if (perm == null) {
@@ -46,6 +51,38 @@ public class Utils {
     // Temp set to op only
     public static boolean isAdmin(CommandSender cs) {
         return (cs.hasPermission(Properties.fullAdmin) || (cs instanceof ConsoleCommandSender) || cs.isOp());
+    }
+    
+    public static void sendMessage(CommandSender cs, String msg, MsgType type) {
+        ChatColor color;
+        switch (type) {
+            case INFO:
+                color = Properties.infoColor;
+                break;
+            case ERROR:
+                color = Properties.errorColor;
+                break;
+            case NEXT_STEP:
+                color = Properties.nextStepColor;
+                break;
+            default:
+                color = ChatColor.WHITE;
+                break;
+        }
+        sendMessage(cs, msg, color);
+    }
+    
+    public static void sendMessage(CommandSender cs, String msg, ChatColor color) {
+        if (cs instanceof Player) {
+            cs.sendMessage(color + msg);
+        }
+        else {
+            cs.sendMessage(msg);
+        }
+    }
+    
+    public static void sendMessage(CommandSender cs, String msg) {
+        sendMessage(cs, msg, ChatColor.WHITE);
     }
     
     public static String getChestInfoMsg(CommandSender cs, Integer chestID) {
@@ -141,5 +178,39 @@ public class Utils {
             return null;
         }       
         return new Location(world, xLoc, yLoc, zLoc);
+    }
+    
+    // Shows a specific page of the chest list owned by playerName to cs
+    public static <T>List<T> getListPage(List<T> list, int pageNr) throws IndexOutOfBoundsException {
+           
+            // Calculate starting index based on page number and chests per page
+            int i = ((pageNr - 1) * Properties.linesPerPage);
+           
+            // Check if index is within bounds
+            if (i >= list.size())
+                    throw new IndexOutOfBoundsException();
+           
+            int j = i + Properties.linesPerPage;
+            j = (j > list.size()) ? list.size() : j;
+           
+            return list.subList(i, j);
+    }
+   
+    public static <T>Integer getNumPages(List<T> list){
+            int pages = (int)Math.ceil((float)list.size() / Properties.linesPerPage);
+            return (pages < 1 ? 1 : pages);
+    }
+    
+    public static Integer getPageNr(String pageString) {
+        Integer pageNr;
+        try {
+            pageNr = Integer.valueOf(pageString);
+        } catch (NumberFormatException ex) {
+            return null;
+        }        
+        if (pageNr < 1) {
+            pageNr = null;
+        }
+        return pageNr;
     }
 }

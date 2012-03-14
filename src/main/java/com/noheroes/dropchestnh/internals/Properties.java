@@ -37,8 +37,11 @@ public class Properties {
     public static final ChatColor chestFilterColor = ChatColor.DARK_AQUA;
     public static final ChatColor chestSlotsColor = ChatColor.DARK_PURPLE;
     public static final ChatColor chestFilledColor = ChatColor.RED;
+    public static final ChatColor infoColor = ChatColor.GREEN;
+    public static final ChatColor errorColor = ChatColor.RED;
+    public static final ChatColor nextStepColor = ChatColor.YELLOW;
 
-    public static final int chestsPerPage = 7;
+    public static final int linesPerPage = 7;
     
     // Permissions  
     public static final String createSuckPerm = "dropchest.create.suck";
@@ -47,5 +50,5 @@ public class Properties {
     public static final String basicAdmin = "dropchest.admin.basic";        // Only permission to look at chests
     public static final String fullAdmin = "dropchest.admin.full";          // All permissions
     
-   public static final String createChestPerm = "dropchestCreatePerm";      // Not an actual permission, only use for internal permission handling, do not change
+    public static final String createChestPerm = "dropchestCreatePerm";      // Not an actual permission, only use for internal permission handling, do not change
 }

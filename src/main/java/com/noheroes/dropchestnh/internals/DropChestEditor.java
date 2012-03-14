@@ -8,6 +8,7 @@ import com.noheroes.dropchestnh.DropChestNH;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Utils.EditMode;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
+import com.noheroes.dropchestnh.internals.Utils.MsgType;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -52,15 +53,18 @@ public class DropChestEditor {
             case ADD_CHEST:
                 // Add chest
                 try {
-                    dc.getDcHandler().addChest(block, player.getName(), chestName);
+                    Integer chestID = dc.getDcHandler().addChest(block, player.getName(), chestName);
+                    if (chestID == null) {
+                        return false;
+                    }
                     if (chestName == null) {
-                        player.sendMessage("Dropchest added");
+                        Utils.sendMessage(player, "Dropchest added with ID " + chestID, MsgType.INFO);
                     }
                     else {
-                        player.sendMessage("Dropchest with name " + chestName + " added");
+                        Utils.sendMessage(player, "Dropchest with name " + chestName + " and ID " + chestID + " added", MsgType.INFO);
                     }
                 } catch (MissingOrIncorrectParametersException ex) {
-                    player.sendMessage(ex.getMessage());
+                    Utils.sendMessage(player, ex.getMessage(), MsgType.ERROR);
                 } finally {
                     return true;
                 }
@@ -68,7 +72,7 @@ public class DropChestEditor {
                 try {
                     // Players can only edit their own chests unless they are an admin
                     if ((!dc.getDcHandler().ownsChest(block.getLocation(), player)) && !Utils.isAdmin(player)) {
-                        player.sendMessage("You cannot edit the filter for a chest that is not yours");
+                        Utils.sendMessage(player, "You cannot edit the filter for a chest that is not yours", MsgType.ERROR);
                         return false;
                     }
                     // Clicked chest without item in hand
@@ -76,12 +80,11 @@ public class DropChestEditor {
                         return false;
                     }
                     if (dc.getDcHandler().updateFilter(mat, block.getLocation(), filter)) {
-                        player.sendMessage(mat.toString() + " has been added to the " + filter.toString() + " filter");
+                        Utils.sendMessage(player, mat.toString() + " has been added to the " + filter.toString() + " filter", MsgType.INFO);
                         return false;
                     }
                     else {
-                        player.sendMessage(mat.toString() + " has been removed from the " + filter.toString() + " filter");
-                                
+                        Utils.sendMessage(player, mat.toString() + " has been removed from the " + filter.toString() + " filter", MsgType.INFO);
                         return false;
                     }
                 } catch (MissingOrIncorrectParametersException ex) {
@@ -91,11 +94,11 @@ public class DropChestEditor {
             case INFO:
                 // Player needs to own the chest or have basic admin permission to look up information about it
                 if ((!dc.getDcHandler().ownsChest(block.getLocation(), player)) && !Utils.hasPermission(player, Properties.basicAdmin)) {
-                    player.sendMessage("This is not your chest");
+                    Utils.sendMessage(player, "This is not your chest", MsgType.ERROR);
                     return true;
                 }
                 if (!dc.getDcHandler().chestExists(block.getLocation())) {
-                    player.sendMessage("This is not a dropchest");
+                    Utils.sendMessage(player, "This is not a dropchest", MsgType.ERROR);
                     return true;
                 }
                 String msg;
@@ -106,10 +109,14 @@ public class DropChestEditor {
                     msg = Utils.getChestFilterInfoMsg(player, chestID, f);
                     player.sendMessage(msg);
                 }
+                if (dc.getDcHandler().isFilterInUse(chestID, Filter.SUCK)) {
+                    Utils.sendMessage(player, "This chest is picking up items in an area of " + dc.getDcHandler().getXArea(chestID) + "x"
+                            + dc.getDcHandler().getZArea(chestID) + "x" + dc.getDcHandler().getYArea(chestID) + " (XxZxY)", MsgType.INFO);
+                }
                 try {
                     if (dc.getDcHandler().getWarnFull(chestID)) {
-                        player.sendMessage("This chest has almost full warning turned on with a threshold");
-                        player.sendMessage("of " + dc.getDcHandler().getWarnThreshold(chestID) + "% and a delay of " + dc.getDcHandler().getWarnDelay(chestID) + " minutes");
+                        Utils.sendMessage(player, "This chest has almost full warning turned on with a threshold", MsgType.INFO);
+                        Utils.sendMessage(player, "of " + dc.getDcHandler().getWarnThreshold(chestID) + "% and a delay of " + dc.getDcHandler().getWarnDelay(chestID) + " minutes", MsgType.INFO);
                     }
                     // This exception should never be thrown in this case
                 } catch (MissingOrIncorrectParametersException ex) {}
@@ -122,13 +129,13 @@ public class DropChestEditor {
     public boolean rightClickEvent() {
         switch (mode) {
             case ADD_CHEST:
-                player.sendMessage("Cancelled adding a chest");
+                Utils.sendMessage(player, "Cancelled adding a chest", MsgType.INFO);
                 return true;
             case FILTER:
-                player.sendMessage("Finished editing filter");
+                Utils.sendMessage(player, "Finished editing filter", MsgType.INFO);
                 return true;
             case INFO:
-                player.sendMessage("Cancelled chest info lookup");
+                Utils.sendMessage(player, "Cancelled chest info lookup", MsgType.INFO);
             default:
                 return true;
         }

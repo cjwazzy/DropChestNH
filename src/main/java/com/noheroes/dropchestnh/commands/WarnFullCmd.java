@@ -7,6 +7,7 @@ package com.noheroes.dropchestnh.commands;
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Utils;
+import com.noheroes.dropchestnh.internals.Utils.MsgType;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -30,11 +31,11 @@ public class WarnFullCmd extends Cmd {
             // Toggle the warn status
             boolean warning = dch.toggleWarning(args[1]);
             if (warning) {
-                cs.sendMessage("Almost full warning turned on with a threshold of " + dch.getWarnThreshold(args[1]) + "%");
-                cs.sendMessage("and a delay of " + dch.getWarnDelay(args[1]) + " minutes");
+                Utils.sendMessage(cs, "Almost full warning turned on with a threshold of " + dch.getWarnThreshold(args[1]) + "%", MsgType.INFO);
+                Utils.sendMessage(cs, "and a delay of " + dch.getWarnDelay(args[1]) + " minutes", MsgType.INFO);
             }
             else {
-                cs.sendMessage("Almost full warning turned off");
+                Utils.sendMessage(cs, "Almost full warning turned off", MsgType.INFO);
             }
             return true;
         }
@@ -44,8 +45,8 @@ public class WarnFullCmd extends Cmd {
         if (args.length > 3) {
             dch.setWarning(args[1], args[2], args[3]);
         }
-        cs.sendMessage("Almost full warning turned on with a threshold of " + dch.getWarnThreshold(args[1]) + "%");
-        cs.sendMessage("and a delay of " + dch.getWarnDelay(args[1]) + " minutes");
+        Utils.sendMessage(cs, "Almost full warning turned on with a threshold of " + dch.getWarnThreshold(args[1]) + "%", MsgType.INFO);
+        Utils.sendMessage(cs, "and a delay of " + dch.getWarnDelay(args[1]) + " minutes", MsgType.INFO);
         return true;
     }
 }

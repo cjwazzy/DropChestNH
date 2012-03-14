@@ -67,12 +67,14 @@ public class ImportCmd extends Cmd {
     private void addChest(Map<String, Object> chestData) {
         String chestName;
         String chestOwner;
+        Integer radius;
         ArrayList<String> locArrayList;
         Map<String, Object> filterMap;
         ArrayList<String> suckList;
         ArrayList<String> pullList;
         ArrayList<String> pushList;
         try {
+            radius = (Integer)chestData.get("radius");
             chestName = (String)chestData.get("name");
             chestOwner = (String)chestData.get("owner");
             locArrayList = (ArrayList<String>)chestData.get("location");
@@ -84,6 +86,10 @@ public class ImportCmd extends Cmd {
             dc.log(Level.WARNING, "Exception while trying to load a chest, skipping it");
             dc.log(Level.WARNING, ex.getMessage());
             return;
+        }
+        // The original dropchest automatically assigns the chest's ID as it's name if none was provided, we simply leave it null
+        if (chestName.matches("#\\d+?")) {
+            chestName = null;
         }
         String locArray[] = new String[4];
         locArray[0] = locArrayList.get(0);
@@ -130,6 +136,11 @@ public class ImportCmd extends Cmd {
             } catch (MissingOrIncorrectParametersException ex) {
                 dc.log(ex.getMessage());
             }
+        }
+        if (dch.isFilterInUse(chestID, Utils.Filter.SUCK) && (radius != null) && (radius != 0)) {
+            Integer distance = Math.round((float)radius / 2);
+            dch.setSuckDistance(chestID, distance);
+            dch.setSuckHeight(chestID, 2);
         }
     }
 }

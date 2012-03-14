@@ -8,7 +8,9 @@ import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Properties;
 import com.noheroes.dropchestnh.internals.Utils;
+import com.noheroes.dropchestnh.internals.Utils.MsgType;
 import java.util.LinkedList;
+import java.util.List;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -24,6 +26,7 @@ public class ListCmd extends Cmd {
     
     @Override
     public boolean execute() throws InsufficientPermissionsException, MissingOrIncorrectParametersException {
+        
         // No parameters besides list -- Player looking up his own chests
         if (args.length == 1) {
             getPlayer();
@@ -34,7 +37,7 @@ public class ListCmd extends Cmd {
         if (args.length > 1) {
             Integer pageNr;
             // Check if the second argument is a page number -- Player looking up another page of his own chest list
-            pageNr = getPageNr(args[1]);
+            pageNr = Utils.getPageNr(args[1]);
             // Second argument was a page number, display page <pageNr> of player's own chest list
             if (pageNr != null) {
                 getPlayer();
@@ -52,7 +55,7 @@ public class ListCmd extends Cmd {
                 return true;
             }
             // Check if third argument is a page number
-            pageNr = getPageNr(args[2]);
+            pageNr = Utils.getPageNr(args[2]);
             if (pageNr == null) {
                 throw new MissingOrIncorrectParametersException("That is not a valid page number");
             }
@@ -63,7 +66,7 @@ public class ListCmd extends Cmd {
     
     // Shows a specific page of the chest list owned by playerName to cs
     private void showListPage(String playerName, Integer pageNr, CommandSender cs) throws MissingOrIncorrectParametersException {
-        LinkedList<Integer> chestList = dch.getPlayerChestList(playerName);
+        List<Integer> chestList = dch.getPlayerChestList(playerName);
         // No chests owned by this player
         if ((chestList == null) || chestList.isEmpty()) {
             if (playerName.equals(cs.getName())) {
@@ -73,43 +76,17 @@ public class ListCmd extends Cmd {
                 throw new MissingOrIncorrectParametersException("Player " + playerName + " does not own any chests");
             }
         }
-        // Calculate starting index based on page number and chests per page
-        int i = ((pageNr - 1) * Properties.chestsPerPage);
-        // Check if index is within bounds
-        if (i >= chestList.size()) {
-            throw new MissingOrIncorrectParametersException("This page does not exist");
+        List<Integer> subChestList;
+        try {
+            subChestList = Utils.getListPage(chestList, pageNr);
+        } catch (IndexOutOfBoundsException ex) {
+            throw new MissingOrIncorrectParametersException("That is not a valid page number");
         }
-        // List pages numbers if there's more than one page worth of lines
-        if (chestList.size() > Properties.chestsPerPage) {
-            int pages;
-            pages = (int)Math.ceil((float)chestList.size() / Properties.chestsPerPage);
-            cs.sendMessage("Chests owned by player " + playerName + ". Page: " + pageNr + "/" + pages);
-        }
-        // Single page
-        else {
-            cs.sendMessage("Chests owned by player " + playerName);
-        }
+        Utils.sendMessage(cs, "Chests owned by player " + playerName + ". Page: " + pageNr + "/" + Utils.getNumPages(chestList), MsgType.INFO);
         String msg;
-        int chestID;
-        // Loop through chests until correct number are displayed on page
-        for ( ; i < (pageNr * Properties.chestsPerPage); i++) {
-            // End of list
-            if (i >= chestList.size())
-                break;            
-            chestID = chestList.get(i);
-            // Create list info string
-            msg = Utils.getChestInfoMsg(cs, chestID);
+        for (Integer chest : subChestList) {
+            msg = Utils.getChestInfoMsg(cs, chest);
             cs.sendMessage(msg);
         }
-    }
-    
-    private Integer getPageNr(String pageString) {
-        Integer pageNr;
-        try {
-            pageNr = Integer.valueOf(pageString);
-        } catch (NumberFormatException ex) {
-            pageNr = null;
-        }        
-        return pageNr;
     }
 }

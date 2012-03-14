@@ -588,6 +588,49 @@ public class DropChestHandler {
         return dcHashMap.get(chestID).getPrimaryLocation();
     }
     
+    public Integer getXArea(Integer chestID) {
+        if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
+            return null;
+        }
+        // Single chest, area is distance * 2 + 1 (for the chest's own location)
+        if (getChest(chestID).getSecondaryLocation() == null) {
+            return ((getChest(chestID).getSuckDistance() * 2) + 1);
+        }
+        // Double chest but along the Z axis
+        if (getChest(chestID).getPrimaryLocation().getBlockX() == getChest(chestID).getSecondaryLocation().getBlockX()) {
+            return ((getChest(chestID).getSuckDistance() * 2) + 1);
+        }
+        // Double chest along the X axis
+        else {
+            return ((getChest(chestID).getSuckDistance() * 2) + 2);
+        }
+    }
+
+    public Integer getZArea(Integer chestID) {
+        if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
+            return null;
+        }
+        // Single chest, area is distance * 2 + 1 (for the chest's own location)
+        if (getChest(chestID).getSecondaryLocation() == null) {
+            return ((getChest(chestID).getSuckDistance() * 2) + 1);
+        }
+        // Double chest but along the X axis
+        if (getChest(chestID).getPrimaryLocation().getBlockZ() == getChest(chestID).getSecondaryLocation().getBlockZ()) {
+            return ((getChest(chestID).getSuckDistance() * 2) + 1);
+        }
+        // Double chest along the Z axis
+        else {
+            return ((getChest(chestID).getSuckDistance() * 2) + 2);
+        }
+    }
+
+    public Integer getYArea(Integer chestID) {
+        if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
+            return null;
+        }
+        return ((getChest(chestID).getSuckHeight() * 2) + 1);
+    }
+    
     public boolean isFilterInUse(Integer chestID, Filter filter) {
         return dcHashMap.get(chestID).isFilterInUse(filter);
     }

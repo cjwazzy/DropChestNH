@@ -9,6 +9,7 @@ import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException
 import com.noheroes.dropchestnh.internals.Properties;
 import com.noheroes.dropchestnh.internals.Utils;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
+import com.noheroes.dropchestnh.internals.Utils.MsgType;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -25,7 +26,7 @@ public class InfoCmd extends Cmd {
         if (args.length == 1) {
             getPlayer();
             if (dc.addPlayerToEditor(player, Utils.EditMode.INFO)) {
-                player.sendMessage("Click on the chest to get information about it");
+                Utils.sendMessage(player, "Click on the chest to get information about it", MsgType.NEXT_STEP);
             }
             return true;
         }
@@ -44,9 +45,14 @@ public class InfoCmd extends Cmd {
                 msg = Utils.getChestFilterInfoMsg(cs, chestID, f);
                 cs.sendMessage(msg);
             }
+            if (dch.isFilterInUse(chestID, Filter.SUCK)) {
+                Utils.sendMessage(cs, "This chest is picking up items in an area of " + dch.getXArea(chestID) + "x"
+                        + dch.getZArea(chestID) + "x" + dch.getYArea(chestID) + " (XxZxY)", MsgType.INFO);
+            }
             if (dch.getWarnFull(chestID)) {
-                cs.sendMessage("This chest has almost full warning turned on with a threshold");
-                cs.sendMessage("of " + dch.getWarnThreshold(chestID) + "% and a delay of " + dch.getWarnDelay(chestID) + " minutes");
+                Utils.sendMessage(cs, "This chest has almost full warning turned on with a threshold", MsgType.INFO);
+                Utils.sendMessage(cs, "of " + dch.getWarnThreshold(chestID) + 
+                        "% and a delay of " + dch.getWarnDelay(chestID) + " minutes", MsgType.INFO);
             }
         }
         return true;

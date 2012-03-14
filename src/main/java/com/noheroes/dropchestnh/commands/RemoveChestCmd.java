@@ -6,6 +6,8 @@ package com.noheroes.dropchestnh.commands;
 
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
+import com.noheroes.dropchestnh.internals.Utils;
+import com.noheroes.dropchestnh.internals.Utils.MsgType;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -28,7 +30,7 @@ public class RemoveChestCmd extends Cmd {
         ownershipCheck(args[1]);
         // Remove chest
         if (dch.removeChest(args[1])) {
-            cs.sendMessage("Chest " + args[1] + " has been successfully removed");
+            Utils.sendMessage(cs, "Chest " + args[1] + " has been successfully removed", MsgType.INFO);
         }
         return true;
     }

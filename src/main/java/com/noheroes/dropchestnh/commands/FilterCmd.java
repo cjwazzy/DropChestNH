@@ -7,8 +7,10 @@ package com.noheroes.dropchestnh.commands;
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import com.noheroes.dropchestnh.internals.Properties;
+import com.noheroes.dropchestnh.internals.Utils;
 import com.noheroes.dropchestnh.internals.Utils.EditMode;
 import com.noheroes.dropchestnh.internals.Utils.Filter;
+import com.noheroes.dropchestnh.internals.Utils.MsgType;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -40,7 +42,7 @@ public class FilterCmd extends Cmd {
         if (args.length == 1) {
             getPlayer();
             if (dc.addPlayerToEditor(player, EditMode.FILTER, filter)) {
-                player.sendMessage("Hit the dropchest with an item to add/remove it from the filter, right click when done");            
+                Utils.sendMessage(player, "Hit the dropchest with an item to add/remove it from the filter, right click when done", MsgType.NEXT_STEP);
             }
             return true;
         }
@@ -58,24 +60,26 @@ public class FilterCmd extends Cmd {
             try {
                 if (args[i].equalsIgnoreCase("all")) {
                     dch.addAllFilter(args[1], filter);
-                    cs.sendMessage("Everything added to filter");
+                    Utils.sendMessage(cs, "Everything added to filter", MsgType.INFO);
                 }
                 else if (args[i].equalsIgnoreCase("clear")) {
                     dch.clearFilter(args[1], filter);
-                    cs.sendMessage("Filter cleared");
+                    Utils.sendMessage(cs, "Filter cleared", MsgType.INFO);
                 }
                 else {
                     // Update filter.  getMaterialFromString call is used to turn numbers into enums when giving feedback
                     if (dch.updateFilter(args[i], args[1], filter)) {
-                        cs.sendMessage(dch.getMaterialFromString(args[i]).toString() + " has been added to the " + filter.toString() + " filter of chest " + args[1]);
+                        Utils.sendMessage(cs, dch.getMaterialFromString(args[i]).toString() 
+                                + " has been added to the " + filter.toString() + " filter of chest " + args[1], MsgType.INFO);
                     }
                     else {
-                        cs.sendMessage(dch.getMaterialFromString(args[i]).toString() + " has been removed from the " + filter.toString() + " filter of chest " + args[1]);
+                        Utils.sendMessage(cs, dch.getMaterialFromString(args[i]).toString() 
+                                + " has been removed from the " + filter.toString() + " filter of chest " + args[1], MsgType.INFO);
                     }
                 }
             // Catch exceptions here because we want to finish the loop in case valid materials are entered as well
             } catch (MissingOrIncorrectParametersException ex) {
-                cs.sendMessage(ex.getMessage());
+                Utils.sendMessage(cs, ex.getMessage(), MsgType.ERROR);
             }
         }
         return true;
