@@ -62,8 +62,9 @@ public class HelpCmd extends Cmd {
             else if (param.equalsIgnoreCase("pull")) {
                 msgList.add(cc + "/dc pull" + ic + " - Enter interactive mode.  While holding");
                 msgList.add(ic + "an item left click on a chest to add/remove it to the filter");
-                msgList.add(cc + "/dc pull chest item1 [item2] [etc]" + ic + " - Adds each item");
-                msgList.add(ic + "listed to the filter.  Separate items by spaced (not commas)");
+                msgList.add(cc + "/dc pull chest item1|all|clear [item2] [etc]" + ic + " - Adds each item");
+                msgList.add(ic + "listed to the filter. Separate items  by spaces (not commas).");
+                msgList.add(ic + "all adds all items, clear empties out the filter");
                 if (Utils.isAdmin(cs)) {
                     msgList.add(ic + "As full admin this command can be used on chests owned");
                     msgList.add(ic + "by other players in the same way as normal");
@@ -72,8 +73,9 @@ public class HelpCmd extends Cmd {
             else if (param.equalsIgnoreCase("push")) {
                 msgList.add(cc + "/dc push" + ic + " - Enter interactive mode.  While holding");
                 msgList.add(ic + "an item left click on a chest to add/remove it to the filter");
-                msgList.add(cc + "/dc push chest item1 [item2] [etc]" + ic + " - Adds each item");
-                msgList.add(ic + "listed to the filter.  Separate items by spaced (not commas)");
+                msgList.add(cc + "/dc push chest item1|all|clear [item2] [etc]" + ic + " - Adds each item");
+                msgList.add(ic + "listed to the filter. Separate items  by spaces (not commas).");
+                msgList.add(ic + "all adds all items, clear empties out the filter");
                 if (Utils.isAdmin(cs)) {
                     msgList.add(ic + "As full admin this command can be used on chests owned");
                     msgList.add(ic + "by other players in the same way as normal");
@@ -82,8 +84,9 @@ public class HelpCmd extends Cmd {
             else if (param.equalsIgnoreCase("suck")) {
                 msgList.add(cc + "/dc suck" + ic + " - Enter interactive mode.  While holding");
                 msgList.add(ic + "an item left click on a chest to add/remove it to the filter");
-                msgList.add(cc + "/dc suck chest item1 [item2] [etc]" + ic + " - Adds each item");
-                msgList.add(ic + "listed to the filter.  Separate items by spaced (not commas)");
+                msgList.add(cc + "/dc suck chest item1|all|clear [item2] [etc]" + ic + " - Adds each item");
+                msgList.add(ic + "listed to the filter. Separate items  by spaces (not commas).");
+                msgList.add(ic + "all adds all items, clear empties out the filter");
                 if (Utils.isAdmin(cs)) {
                     msgList.add(ic + "As full admin this command can be used on chests owned");
                     msgList.add(ic + "by other players in the same way as normal");
@@ -120,8 +123,8 @@ public class HelpCmd extends Cmd {
                 msgList.add(cc + "/dc setdistance|sd chest dist" + ic + " - Sets the suck distance for");
                 msgList.add(ic + "a dropchest.  This is measured in blocks, creating a square");
                 msgList.add(ic + "or rectangle (for double chests). Max value: " + Properties.maxDistance);
-                if(Utils.hasPermission(cs, Properties.basicAdmin)) {
-                    msgList.add(ic + "As basic admin this command can be used on chests owned by");
+                if(Utils.isAdmin(cs)) {
+                    msgList.add(ic + "As full admin this command can be used on chests owned by");
                     msgList.add(ic + "owned by other players in the same way as normal");
                 }
             }
@@ -129,16 +132,16 @@ public class HelpCmd extends Cmd {
                 msgList.add(cc + "/dc setheight|sh chest height" + ic + " - Sets the suck height for");
                 msgList.add(ic + "a dropchest. This is measure in blocks. By default a chest only");
                 msgList.add(ic + "sucks items up that are on it's own level. Max value: " + Properties.maxHeight);
-                if(Utils.hasPermission(cs, Properties.basicAdmin)) {
-                    msgList.add(ic + "As basic admin this command can be used on chests owned by");
+                if(Utils.isAdmin(cs)) {
+                    msgList.add(ic + "As full admin this command can be used on chests owned by");
                     msgList.add(ic + "owned by other players in the same way as normal");
                 }
             }
             else if (param.equalsIgnoreCase("setname") || param.equalsIgnoreCase("sn")) {
                 msgList.add(cc + "/dc setname|sn chest ChestName" + ic + " - Sets the name of a");
                 msgList.add(ic + "dropchest or renames it if it already had a name");
-                if(Utils.hasPermission(cs, Properties.basicAdmin)) {
-                    msgList.add(ic + "As basic admin this command can be used on chests owned by");
+                if(Utils.isAdmin(cs)) {
+                    msgList.add(ic + "As full admin this command can be used on chests owned by");
                     msgList.add(ic + "owned by other players in the same way as normal");
                 }
             }
@@ -148,14 +151,15 @@ public class HelpCmd extends Cmd {
                 msgList.add(ic + "is sent every " + Properties.defaultWarningDelay + " minutes");
                 msgList.add(cc + "/dc warnfull|wf chest [filled%] [delay]" + ic + " - Allows you to specify");
                 msgList.add(ic + " at what % full a chest warns, and how often (in mins)");
-                if(Utils.hasPermission(cs, Properties.basicAdmin)) {
-                    msgList.add(ic + "As basic admin this command can be used on chests owned by");
+                if(Utils.isAdmin(cs)) {
+                    msgList.add(ic + "As full admin this command can be used on chests owned by");
                     msgList.add(ic + "owned by other players in the same way as normal");
                 }
             }
             else if (param.equalsIgnoreCase("listall") && Utils.hasPermission(cs, Properties.basicAdmin)) {
                 msgList.add(cc + "/dc listall <A>" + ic + " - Admin only command to list the number of");
-                msgList.add(ic + "chests in use by each player. Use /dc list for detailed info");
+                msgList.add(ic + "chests in use by each player. Use /dc list for detailed info on");
+                msgList.add(ic + "chests owned by a specific player");
             }
             else {
                 Utils.sendMessage(cs, "Unknown command " + param + ". /dc help for a list of commands", MsgType.ERROR);
@@ -179,9 +183,9 @@ public class HelpCmd extends Cmd {
         helpMsgList.add(cc + "/dc warnfull|wf chest [Filled%] [Delay]" + ic + " - Chest full warning");
         helpMsgList.add(cc + "/dc help command" + ic + " - Detailed information about the command");
         if (Utils.hasPermission(cs, Properties.basicAdmin)) {
-            helpMsgList.add(cc + "/dc listall <A>" + ic + " - List of chests for each player");
-            helpMsgList.add(cc + "/dc info [chest] <A>" + ic + " - Works on other player's chests");
-            helpMsgList.add(cc + "/dc list [PlayerName] [PageNr] <A>" + ic + " - List player's chests");
+            helpMsgList.add(cc + "/dc listall" + ic + " - <A> List of number of chests for each player");
+            helpMsgList.add(cc + "/dc info [chest]" + ic + " - <A> Works on other player's chests");
+            helpMsgList.add(cc + "/dc list PlayerName [PageNr]" + ic + " - <A> List PlayerName's chests");
         }
         if (Utils.isAdmin(cs)) {
             helpMsgList.add(cc + "Full Admin" + ic + " - All commands work on other player's chests");
@@ -197,7 +201,7 @@ public class HelpCmd extends Cmd {
     
     private void sendHelpListHeader(Integer pageNr) {
         List<String> msg = new ArrayList<String>();
-        msg.add(ChatColor.GREEN + "Help commands. Chest is any chest identifier (name or ID). " + pageNr + "/" + Utils.getNumPages(getHelpList()));
+        msg.add(ChatColor.GREEN + "Help commands. Chests are specified by name or ID. Page:" + pageNr + "/" + Utils.getNumPages(getHelpList()));
         if (Utils.hasPermission(cs, Properties.basicAdmin)) {
             msg.add(ChatColor.GREEN + "Things in [brackets] are optional.  <A> denotes admin command");
         }

@@ -35,6 +35,7 @@ public class DCListener implements Listener {
         this.dc = dc;
     }
     
+    // Player interact event to get left click/right click on chests/etc
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {        
         if (!dc.isInEditMode(event.getPlayer())) {
@@ -49,7 +50,7 @@ public class DCListener implements Listener {
                     event.getPlayer().getItemInHand().getType());
             event.setCancelled(true);
         }
-        
+        // Right click to cancel edit mode
         if (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             done = dc.getPlayerEditor(event.getPlayer()).rightClickEvent();
             event.setCancelled(true);
@@ -59,6 +60,7 @@ public class DCListener implements Listener {
         }
     }
     
+    // Checks for double chest placement
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         if (event.getBlock().getType().equals(Material.CHEST)) {
@@ -66,11 +68,13 @@ public class DCListener implements Listener {
         }
     }
     
+    // Exits edit mode if a player logs off
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         dc.removePlayerFromEditor(event.getPlayer());
     }
     
+    // Monitors block breaking to remove dropchests broken
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         if (event.getBlock().getType().equals((Material.CHEST))) {
@@ -85,6 +89,7 @@ public class DCListener implements Listener {
         }
     }
     
+    // Monitors explosions to remove dropchests blown up
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
         List<Block> blockList = event.blockList();
@@ -101,6 +106,7 @@ public class DCListener implements Listener {
         }
     }
     
+    // Vehicle movement event needed for push/pull aspect of dropchest
     @EventHandler
     public void onVehicleMove(VehicleMoveEvent event) {
         if (event.getVehicle() instanceof StorageMinecart) {
