@@ -100,8 +100,10 @@ public class Utils {
             }
         }
         InventoryData invData = dc.getDcHandler().getInventoryData(chestID);
-        msg += getColor(cs, Properties.chestSlotsColor) + " " + invData.getFilledSlots() + "/" + invData.getTotalSlots();
-        msg += getColor(cs, Properties.chestFilledColor) + " " + invData.getPercentageUsed() + "%";       
+        if (invData != null) {
+            msg += getColor(cs, Properties.chestSlotsColor) + " " + invData.getFilledSlots() + "/" + invData.getTotalSlots();
+            msg += getColor(cs, Properties.chestFilledColor) + " " + invData.getPercentageUsed() + "%";       
+        }
         return msg;
     }
     

@@ -385,12 +385,15 @@ public class DropChestHandler {
     // Adds item to chest with ID chestID.  Returns anything that didn't fit, or null if everything fit
     public ItemStack addItem(Integer chestID, ItemStack item) {
         if ((chestID == null) || (item == null)) {
-            return null;
+            return item;
         }
         // Bukkit methods alter the ItemStack so we clone it first
         ItemStack inputItem = item.clone();
         DropChestObj dropChest;
         dropChest = dcHashMap.get(chestID);
+        if ((dropChest == null) || (dropChest.getPrimaryInventory() == null)) {
+            return item;
+        }
         HashMap<Integer, ItemStack> leftOverItems;
         // Check if the bottom half of the inventory already contains some of the item
         if (dropChest.getSecondaryInventory() == null) {
@@ -636,6 +639,8 @@ public class DropChestHandler {
     }
     
     public InventoryData getInventoryData(Integer chestID) {
+        if ((chestID == null) || !dcHashMap.containsKey(chestID))
+            return null;
         return dcHashMap.get(chestID).getInventoryData();
     }
     

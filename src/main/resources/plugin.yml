@@ -11,13 +11,13 @@ commands:
 permissions:
   dropchest.create.suck:
     description: Allows user to create suck filters
-    default: false
+    default: true
   dropchest.create.pull:
     description: Allows user to create pull filters
-    default: false
+    default: true
   dropchest.create.push:
     description: Allows user to create push filters
-    default: false
+    default: true
   dropchest.admin.basic:
     description: Gives user access to basic admin commands (information about other chests only)
     default: op

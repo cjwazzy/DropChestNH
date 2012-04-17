@@ -20,21 +20,24 @@ import org.bukkit.entity.Player;
 public class DropChestEditor {
     private Player player;
     private EditMode mode;
-    private String chestName;
+    private int sd;
+    private int sh;
     private Filter filter;
     private static DropChestNH dc;
 
-    public DropChestEditor(Player player, EditMode mode, String chestName) {
+    public DropChestEditor(Player player, EditMode mode, Integer sd, Integer sh) {
         this.player = player;
         this.mode = mode;
-        this.chestName = chestName;
+        this.sd = sd;
+        this.sh = sh;
         this.dc = DropChestNH.getInstance();
     }
     
     public DropChestEditor(Player player, EditMode mode, Filter filter) {
         this.player = player;
         this.mode = mode;
-        this.chestName = null;
+        this.sd = 0;
+        this.sh = 0;
         this.dc = DropChestNH.getInstance();
         this.filter = filter;
     }
@@ -42,7 +45,8 @@ public class DropChestEditor {
     public DropChestEditor(Player player, EditMode mode) {
         this.player = player;
         this.mode = mode;
-        this.chestName = null;
+        this.sd = 0;
+        this.sh = 0;
         this.dc = DropChestNH.getInstance();
     }
     
@@ -53,16 +57,18 @@ public class DropChestEditor {
             case ADD_CHEST:
                 // Add chest
                 try {
-                    Integer chestID = dc.getDcHandler().addChest(block, player.getName(), chestName);
+                    Integer chestID = dc.getDcHandler().addChest(block, player.getName());
                     if (chestID == null) {
                         return false;
                     }
-                    if (chestName == null) {
-                        Utils.sendMessage(player, "Dropchest added with ID " + chestID, MsgType.INFO);
+                    if (sd != 0) {
+                        dc.getDcHandler().setSuckDistance(chestID, sd);
+                        dc.getDcHandler().addAllFilter(chestID, filter.SUCK);
                     }
-                    else {
-                        Utils.sendMessage(player, "Dropchest with name " + chestName + " and ID " + chestID + " added", MsgType.INFO);
+                    if (sh != 0) {
+                        dc.getDcHandler().setSuckHeight(chestID, sh);
                     }
+                    Utils.sendMessage(player, "Dropchest added with ID " + chestID, MsgType.INFO);
                 } catch (MissingOrIncorrectParametersException ex) {
                     Utils.sendMessage(player, ex.getMessage(), MsgType.ERROR);
                 } finally {

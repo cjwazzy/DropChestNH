@@ -138,9 +138,9 @@ public class ImportCmd extends Cmd {
             }
         }
         if (dch.isFilterInUse(chestID, Utils.Filter.SUCK) && (radius != null) && (radius != 0)) {
-            Integer distance = Math.round((float)radius / 2);
+            Integer distance = radius;
             dch.setSuckDistance(chestID, distance);
-            dch.setSuckHeight(chestID, 2);
+            dch.setSuckHeight(chestID, 3);
         }
     }
 }

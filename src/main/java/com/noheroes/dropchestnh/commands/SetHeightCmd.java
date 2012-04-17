@@ -32,10 +32,10 @@ public class SetHeightCmd extends Cmd {
         try {
             height = Integer.valueOf(args[2]);
         } catch (NumberFormatException ex) {
-            throw new MissingOrIncorrectParametersException("The distance must be a non-negative number between 0 and " + Properties.maxHeight);
+            throw new MissingOrIncorrectParametersException("The height must be a non-negative number between 0 and " + Properties.maxHeight);
         }
         if ((height < 0 ) || (height > Properties.maxHeight)) {
-            throw new MissingOrIncorrectParametersException("The distance must be a non-negative number between 0 and " + Properties.maxHeight);
+            throw new MissingOrIncorrectParametersException("The height must be a non-negative number between 0 and " + Properties.maxHeight);
         }
         dch.setSuckHeight(args[1], height);
         Utils.sendMessage(cs, "Suck height for chest " + args[1] + " changed to " + height, MsgType.INFO); 

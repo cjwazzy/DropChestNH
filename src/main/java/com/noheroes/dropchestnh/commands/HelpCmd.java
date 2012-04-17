@@ -56,8 +56,8 @@ public class HelpCmd extends Cmd {
             String param = args[1];
             List<String> msgList = new ArrayList<String>();
             if (param.equalsIgnoreCase("add")) {
-                msgList.add(cc + "/dc add [ChestName]" + ic + " - Adds a new dropchest.");
-                msgList.add(ic + "ChestName is an optional name for the chest");
+                msgList.add(cc + "/dc add [distance] [height]" + ic + " - Adds a new dropchest.");
+                msgList.add(ic + "Distance and height are optional (no suck area by default)");
             }
             else if (param.equalsIgnoreCase("pull")) {
                 msgList.add(cc + "/dc pull" + ic + " - Enter interactive mode.  While holding");
@@ -171,7 +171,7 @@ public class HelpCmd extends Cmd {
     
     private List<String> getHelpList() {
         List<String> helpMsgList = new ArrayList<String>();
-        helpMsgList.add(cc + "/dc add [Name]" + ic + " - Add a new dropchest");
+        helpMsgList.add(cc + "/dc add [distance] [height]" + ic + " - Add a new dropchest");
         helpMsgList.add(cc + "/dc pull|push|suck" + ic + " - Interactive filter mode");
         helpMsgList.add(cc + "/dc pull|push|suck chest item1 [item2] [etc]" + ic + " - Add each item");
         helpMsgList.add(cc + "/dc list [PageNr]" + ic + " - A list of your chests");

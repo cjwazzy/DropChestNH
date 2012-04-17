@@ -75,11 +75,19 @@ public class DropChestObj {
     }
     
     protected Inventory getPrimaryInventory() {
-        return ((primaryLocation == null) ? null : ((Chest)primaryLocation.getBlock().getState()).getInventory());
+        if (primaryLocation == null)
+            return null;
+        if (!primaryLocation.getBlock().getType().equals(Material.CHEST))
+            return null;
+        return ((Chest)primaryLocation.getBlock().getState()).getInventory();
     }
     
     protected Inventory getSecondaryInventory() {
-        return ((secondaryLocation == null) ? null : ((Chest)secondaryLocation.getBlock().getState()).getInventory());
+        if (secondaryLocation == null)
+            return null;
+        if (!secondaryLocation.getBlock().getType().equals(Material.CHEST))
+            return null;
+        return ((Chest)secondaryLocation.getBlock().getState()).getInventory();
     }
     
     protected String getName() {
@@ -147,6 +155,8 @@ public class DropChestObj {
     }
     
     protected InventoryData getInventoryData() {
+        if (this.getPrimaryInventory() == null) 
+            return null;
         return getInvData(getPrimaryInventory()).add(getInvData(getSecondaryInventory()));
     }
     

@@ -167,6 +167,12 @@ public class MiniStorage implements StorageInterface {
             dc.log(Level.WARNING, "Error converting chest suck height to int, setting to 0");
             suckHeight = 0;
         }
+        if (suckDistance > Properties.maxDistance) {
+            suckDistance = Properties.maxDistance;
+        }
+        if (suckHeight > Properties.maxHeight) {
+            suckHeight = Properties.maxHeight;
+        }
         boolean warnFull = arg.getBoolean(almostFullWarning);
         Integer warnThreshold;
         Integer warnDelay;
