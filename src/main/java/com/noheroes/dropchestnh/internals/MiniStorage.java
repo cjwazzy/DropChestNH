@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.yaml.snakeyaml.Yaml;
 
@@ -150,6 +151,24 @@ public class MiniStorage implements StorageInterface {
         Location primaryLocation = Utils.stringToLoc(locStr);
         locStr = arg.getArray(secondaryLocKey);
         Location secondaryLocation = Utils.stringToLoc(locStr);
+        // Location couldn't be loaded
+        if (primaryLocation == null) {
+            dc.log(Level.WARNING, "Error loading a chest, primary location is not correct");
+            return null;
+        }
+        // No chest at primary location, delete dropchest entry
+        if (!primaryLocation.getBlock().getState().getType().equals(Material.CHEST)) {
+            dc.log("Error loading dropchest from file, no chest exists at that location, removing...");
+            minidb.removeIndex(chestID.toString());
+            return null;
+        }
+        // If secondary location exists and is not a chest, set to null
+        if (secondaryLocation != null) {
+            if (!secondaryLocation.getBlock().getState().getType().equals(Material.CHEST)) {
+                secondaryLocation = null;
+            }
+        }
+        
         List<Integer> suckList = stringArrayToIntegerList(arg.getArray(suckFilterKey));
         List<Integer> pullList = stringArrayToIntegerList(arg.getArray(pullFilterKey));
         List<Integer> pushList = stringArrayToIntegerList(arg.getArray(pushFilterKey));
@@ -183,11 +202,6 @@ public class MiniStorage implements StorageInterface {
             dc.log(Level.WARNING, "Error converting chest warning information back to int, using defaults");
             warnThreshold = Properties.defaultAlmostFullWarningThreshold;
             warnDelay = Properties.defaultWarningDelay;
-        }
-        
-        if (primaryLocation == null) {
-            dc.log(Level.WARNING, "Error loading a chest, primary location is not correct");
-            return null;
         }
         
         // Create dropchest
