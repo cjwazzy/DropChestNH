@@ -146,11 +146,11 @@ public class HelpCmd extends Cmd {
                 }
             }
             else if (param.equalsIgnoreCase("warnfull") || param.equalsIgnoreCase("wf")) {
-                msgList.add(cc + "/dc warnfull|wf chest" + ic + " - Sends a warning to you when your");
+                msgList.add(cc + "/dc warnfull|wf chest" + ic + " - Toggles a warning to you when your");
                 msgList.add(ic + "chest picks up an item that fills it past " + Properties.defaultAlmostFullWarningThreshold + "%. The warning");
                 msgList.add(ic + "is sent every " + Properties.defaultWarningDelay + " minutes");
-                msgList.add(cc + "/dc warnfull|wf chest [filled%] [delay]" + ic + " - Allows you to specify");
-                msgList.add(ic + " at what % full a chest warns, and how often (in mins)");
+                //msgList.add(cc + "/dc warnfull|wf chest [filled%] [delay]" + ic + " - Allows you to specify");
+                //msgList.add(ic + " at what % full a chest warns, and how often (in mins)");
                 if(Utils.isAdmin(cs)) {
                     msgList.add(ic + "As full admin this command can be used on chests owned by");
                     msgList.add(ic + "owned by other players in the same way as normal");
@@ -180,7 +180,7 @@ public class HelpCmd extends Cmd {
         helpMsgList.add(cc + "/dc setdistance|sd chest dist" + ic + " - Sets suck distance in blocks");
         helpMsgList.add(cc + "/dc setheight|sh chest height" + ic + " - Sets suck high in blocks");
         helpMsgList.add(cc + "/dc setname|sn chest name" + ic + " - Set name/renames a chest");
-        helpMsgList.add(cc + "/dc warnfull|wf chest [Filled%] [Delay]" + ic + " - Chest full warning");
+        helpMsgList.add(cc + "/dc warnfull|wf chest" + ic + " - Chest full warning");
         helpMsgList.add(cc + "/dc help command" + ic + " - Detailed information about the command");
         if (Utils.hasPermission(cs, Properties.basicAdmin)) {
             helpMsgList.add(cc + "/dc listall" + ic + " - <A> List of number of chests for each player");

@@ -50,9 +50,9 @@ public class InfoCmd extends Cmd {
                         + dch.getZArea(chestID) + "x" + dch.getYArea(chestID) + " (XxZxY)", MsgType.INFO);
             }
             if (dch.getWarnFull(chestID)) {
-                Utils.sendMessage(cs, "This chest has almost full warning turned on with a threshold", MsgType.INFO);
-                Utils.sendMessage(cs, "of " + dch.getWarnThreshold(chestID) + 
-                        "% and a delay of " + dch.getWarnDelay(chestID) + " minutes", MsgType.INFO);
+                Utils.sendMessage(cs, "This chest has almost full warning turned on", MsgType.INFO);
+                //Utils.sendMessage(cs, "of " + dch.getWarnThreshold(chestID) + 
+                //        "% and a delay of " + dch.getWarnDelay(chestID) + " minutes", MsgType.INFO);
             }
         }
         return true;

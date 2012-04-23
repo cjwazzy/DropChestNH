@@ -48,8 +48,8 @@ public class DropChestObj {
         this.pushFilter = new LinkedHashSet<Integer>();
         this.chestSuckDistance = 0;
         this.chestSuckHeight = 0;
-        this.almostFullWarning = false;
-        this.lastWarningTime = System.currentTimeMillis();
+        this.almostFullWarning = true;
+        this.lastWarningTime = 0L;
         this.warningDelay = Properties.defaultWarningDelay;
         this.almostFullWarningThreshold = Properties.defaultAlmostFullWarningThreshold;
     }
