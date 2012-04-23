@@ -39,7 +39,7 @@ public class HelpCmd extends Cmd {
     public boolean execute() throws InsufficientPermissionsException, MissingOrIncorrectParametersException {
         List<String> helpMsgList;
         Integer pageNr = null;
-        if (args.length == 1) {
+        if (args.length <= 1) {
             pageNr = 1;
         }
         // pageNr isn't set yet

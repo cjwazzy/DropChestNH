@@ -4,7 +4,7 @@
 
   <groupId>com.noheroes</groupId>
   <artifactId>dropchestnh</artifactId>
-  <version>0.5</version>
+  <version>0.52</version>
   <packaging>jar</packaging>
 
   <name>DropChestNH</name>
