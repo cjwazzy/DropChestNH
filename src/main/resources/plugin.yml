@@ -1,5 +1,5 @@
 name: DropChestNH
-version: 0.52
+version: 1.0
 author: Morthis
 description: Chests can be configured to pick items up off the ground, or add/remove items from passing storage minecarts.
 main: com.noheroes.dropchestnh.DropChestNH
@@ -11,13 +11,13 @@ commands:
 permissions:
   dropchest.create.suck:
     description: Allows user to create suck filters
-    default: true
+    default: op
   dropchest.create.pull:
     description: Allows user to create pull filters
-    default: true
+    default: op
   dropchest.create.push:
     description: Allows user to create push filters
-    default: true
+    default: op
   dropchest.admin.basic:
     description: Gives user access to basic admin commands (information about other chests only)
     default: op

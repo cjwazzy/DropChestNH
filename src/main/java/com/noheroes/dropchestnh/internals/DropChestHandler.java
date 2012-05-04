@@ -511,6 +511,9 @@ public class DropChestHandler {
         if ((chestID == null) || !dcHashMap.containsKey(chestID)) {
             throw new MissingOrIncorrectParametersException("That chest does not exist or is not a dropchest.");
         }
+        if ((filter == Filter.PULL) || (filter == Filter.PUSH)) {
+            addChestToPullMap(chestID);
+        }
         getChest(chestID).addAllFilter(filter);
         chestChanged(chestID);
     }

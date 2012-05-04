@@ -4,7 +4,7 @@
 
   <groupId>com.noheroes</groupId>
   <artifactId>dropchestnh</artifactId>
-  <version>0.52</version>
+  <version>1.0</version>
   <packaging>jar</packaging>
 
   <name>DropChestNH</name>
@@ -38,7 +38,7 @@
             <!-- Grabs from Bukkit Artifactory -->
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.1-R6</version>
+            <version>1.2.5-R1.0</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
