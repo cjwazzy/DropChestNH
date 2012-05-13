@@ -447,8 +447,9 @@ public class DropChestHandler {
         if ((filter == Filter.PULL) || (filter == Filter.PUSH)) {
             addChestToPullMap(chestID);
         }
+        boolean success = dcHashMap.get(chestID).updateFilter(mat.getId(), filter);
         chestChanged(chestID);
-        return dcHashMap.get(chestID).updateFilter(mat.getId(), filter);
+        return success;
     }
     
     // Attempts to find the chestID by matching indentifier against or chestID or chest name
