@@ -37,8 +37,7 @@ public class DropChestSuckEvent extends Event implements Cancellable {
         this.cancelled = cancelled;
     }
     
-    // Outdated?  It does not need to be overriden anymore
-    public HandlerList getHandlerList() {
+    public static HandlerList getHandlerList() {
         return handlers;
     }
     
