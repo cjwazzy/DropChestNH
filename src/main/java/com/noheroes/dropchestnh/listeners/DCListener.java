@@ -47,7 +47,7 @@ public class DCListener implements Listener {
         // Left clicked on a chest
         if ((event.getAction().equals(Action.LEFT_CLICK_BLOCK)) && event.getClickedBlock().getType().equals(Material.CHEST)) {
             done = dc.getPlayerEditor(event.getPlayer()).leftClickEvent(event.getClickedBlock(), 
-                    event.getPlayer().getItemInHand().getType());
+                    event.getPlayer().getItemInHand());
             event.setCancelled(true);
         }
         // Right click to cancel edit mode

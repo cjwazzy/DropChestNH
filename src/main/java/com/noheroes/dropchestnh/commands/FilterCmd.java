@@ -6,6 +6,7 @@ package com.noheroes.dropchestnh.commands;
 
 import com.noheroes.dropchestnh.exceptions.InsufficientPermissionsException;
 import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
+import com.noheroes.dropchestnh.internals.MaterialNames;
 import com.noheroes.dropchestnh.internals.Properties;
 import com.noheroes.dropchestnh.internals.Utils;
 import com.noheroes.dropchestnh.internals.Utils.EditMode;
@@ -62,18 +63,19 @@ public class FilterCmd extends Cmd {
                     dch.addAllFilter(args[1], filter);
                     Utils.sendMessage(cs, "Everything added to filter", MsgType.INFO);
                 }
-                else if (args[i].equalsIgnoreCase("clear")) {
+                else if (args[i].equalsIgnoreCase("clear") || args[i].equalsIgnoreCase("none")) {
                     dch.clearFilter(args[1], filter);
                     Utils.sendMessage(cs, "Filter cleared", MsgType.INFO);
                 }
                 else {
+                    String matData = Utils.getMaterialDataFromString(args[i]);
                     // Update filter.  getMaterialFromString call is used to turn numbers into enums when giving feedback
-                    if (dch.updateFilter(args[i], args[1], filter)) {
-                        Utils.sendMessage(cs, dch.getMaterialFromString(args[i]).toString() 
+                    if (dch.updateFilter(matData, args[1], filter)) {
+                        Utils.sendMessage(cs, MaterialNames.getItemName(matData) 
                                 + " has been added to the " + filter.toString() + " filter of chest " + args[1], MsgType.INFO);
                     }
                     else {
-                        Utils.sendMessage(cs, dch.getMaterialFromString(args[i]).toString() 
+                        Utils.sendMessage(cs, MaterialNames.getItemName(matData)
                                 + " has been removed from the " + filter.toString() + " filter of chest " + args[1], MsgType.INFO);
                     }
                 }

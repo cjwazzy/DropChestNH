@@ -24,9 +24,9 @@ public class DropChestObj {
     private Integer chestID;
     private String chestName;
     private String ownerName;
-    private Set<Integer> suckFilter;
-    private Set<Integer> pullFilter;
-    private Set<Integer> pushFilter;
+    private Set<String> suckFilter;
+    private Set<String> pullFilter;
+    private Set<String> pushFilter;
     private Integer chestSuckDistance;
     private Integer chestSuckHeight;
     private boolean almostFullWarning;
@@ -43,9 +43,9 @@ public class DropChestObj {
         this.chestName = chestName;
         this.ownerName = ownerName;
         this.chestID = chestID;
-        this.suckFilter = new LinkedHashSet<Integer>();
-        this.pullFilter = new LinkedHashSet<Integer>();
-        this.pushFilter = new LinkedHashSet<Integer>();
+        this.suckFilter = new LinkedHashSet<String>();
+        this.pullFilter = new LinkedHashSet<String>();
+        this.pushFilter = new LinkedHashSet<String>();
         this.chestSuckDistance = 0;
         this.chestSuckHeight = 0;
         this.almostFullWarning = true;
@@ -115,13 +115,13 @@ public class DropChestObj {
     }
     
     // Adds the material to the list if it's not present and returns true, removes the material if it's on the list and returns false
-    protected boolean updateFilter(Integer MatID, Filter filter) {
-        if (getFilter(filter).contains(MatID)) {
-            getFilter(filter).remove(MatID);
+    protected boolean updateFilter(String Mat, Filter filter) {
+        if (getFilter(filter).contains(Mat)) {
+            getFilter(filter).remove(Mat);
             return false;
         }
         else {
-            getFilter(filter).add(MatID);
+            getFilter(filter).add(Mat);
             return true;
         }
     }
@@ -133,12 +133,13 @@ public class DropChestObj {
     protected void addAllFilter(Filter filter) {
         for (Material mat : Material.values()) {
             if (mat != Material.AIR)
-                getFilter(filter).add(mat.getId());
+                getFilter(filter).add(String.valueOf(mat.getId()));
         }
     }
     
-    protected boolean filterContains(Integer matID, Filter filter) {
-        return getFilter(filter).contains(matID);
+    protected boolean filterContains(ItemStack is, Filter filter) {
+        return (getFilter(filter).contains(Utils.itemStackToString(is))
+                || getFilter(filter).contains(String.valueOf(is.getTypeId())));
     }
     
     protected boolean isFilterInUse(Filter filter) {
@@ -160,7 +161,7 @@ public class DropChestObj {
         return getInvData(getPrimaryInventory()).add(getInvData(getSecondaryInventory()));
     }
     
-    protected Set<Integer> getFilter(Filter filter) {
+    protected Set<String> getFilter(Filter filter) {
         switch(filter) {
             case SUCK: 
                 return suckFilter;

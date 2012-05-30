@@ -41,6 +41,8 @@ public class Properties {
     public static final ChatColor errorColor = ChatColor.RED;
     public static final ChatColor nextStepColor = ChatColor.YELLOW;
 
+    public static final Short noDurabilityValue = 0;
+    
     public static final int linesPerPage = 7;
     
     // Permissions  

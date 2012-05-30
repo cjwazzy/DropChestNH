@@ -94,8 +94,8 @@ public class MiniStorage implements StorageInterface {
     private Arguments DCOToArg(DropChestObj dropchest) {
         // Create new argument using chest ID as key
         Arguments arg = new Arguments(dropchest.getID().toString());
-        Set<Integer> filterSet;
-        List<Integer> filterList;
+        Set<String> filterSet;
+        List<String> filterList;
         // Add chest name if applicable
         if (dropchest.getName() != null) {
             arg.setValue(chestNameKey, dropchest.getName());
@@ -103,17 +103,17 @@ public class MiniStorage implements StorageInterface {
         // Add each filter if it's not empty
         if (dropchest.isFilterInUse(Utils.Filter.PUSH)) {
             filterSet = dropchest.getFilter(Utils.Filter.PUSH);
-            filterList = new ArrayList<Integer>(filterSet);
+            filterList = new ArrayList<String>(filterSet);
             arg.setValue(pushFilterKey, filterList);
         }
         if (dropchest.isFilterInUse(Utils.Filter.PULL)) {
             filterSet = dropchest.getFilter(Utils.Filter.PULL);
-            filterList = new ArrayList<Integer>(filterSet);
+            filterList = new ArrayList<String>(filterSet);
             arg.setValue(pullFilterKey, filterList);
         }
         if (dropchest.isFilterInUse(Utils.Filter.SUCK)) {
             filterSet = dropchest.getFilter(Utils.Filter.SUCK);
-            filterList = new ArrayList<Integer>(filterSet);
+            filterList = new ArrayList<String>(filterSet);
             arg.setValue(suckFilterKey, filterList);
         }
         String[] locStr;
@@ -169,9 +169,9 @@ public class MiniStorage implements StorageInterface {
             }
         }
         
-        List<Integer> suckList = stringArrayToIntegerList(arg.getArray(suckFilterKey));
-        List<Integer> pullList = stringArrayToIntegerList(arg.getArray(pullFilterKey));
-        List<Integer> pushList = stringArrayToIntegerList(arg.getArray(pushFilterKey));
+        String[] suckList = arg.getArray(suckFilterKey);
+        String[] pullList = arg.getArray(pullFilterKey);
+        String[] pushList = arg.getArray(pushFilterKey);
         Integer suckDistance;
         try {
             suckDistance = arg.getInteger(chestSuckDistance);
@@ -213,18 +213,18 @@ public class MiniStorage implements StorageInterface {
         dropchest.setAlmostFullThreshold(warnThreshold);
         dropchest.setAlmostFullWarning(warnFull);
         if (suckList != null) {
-            for (Integer matID : suckList) {
-                dropchest.updateFilter(matID, Utils.Filter.SUCK);
+            for (String mat : suckList) {
+                dropchest.updateFilter(mat, Utils.Filter.SUCK);
             }
         }
         if (pullList != null) {
-            for (Integer matID : pullList) {
-                dropchest.updateFilter(matID, Utils.Filter.PULL);
+            for (String mat : pullList) {
+                dropchest.updateFilter(mat, Utils.Filter.PULL);
             }
         }
         if (pushList != null) {
-            for (Integer matID : pushList) {
-                dropchest.updateFilter(matID, Utils.Filter.PUSH);
+            for (String mat : pushList) {
+                dropchest.updateFilter(mat, Utils.Filter.PUSH);
             }
         }
         return dropchest;

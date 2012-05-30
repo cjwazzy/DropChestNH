@@ -12,6 +12,7 @@ import com.noheroes.dropchestnh.internals.Utils.MsgType;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -52,7 +53,7 @@ public class DropChestEditor {
     
     // Called when left click is performed on a chest while the player is in edit mode
     // Returns true if edit mode should be disabled after this click, false if edit mode should stay on
-    public boolean leftClickEvent(Block block, Material mat) {
+    public boolean leftClickEvent(Block block, ItemStack is) {
         switch(mode) {
             case ADD_CHEST:
                 // Add chest
@@ -82,15 +83,15 @@ public class DropChestEditor {
                         return false;
                     }
                     // Clicked chest without item in hand
-                    if (mat.equals(Material.AIR)) {
+                    if (is.getType().equals(Material.AIR)) {
                         return false;
                     }
-                    if (dc.getDcHandler().updateFilter(mat, block.getLocation(), filter)) {
-                        Utils.sendMessage(player, mat.toString() + " has been added to the " + filter.toString() + " filter", MsgType.INFO);
+                    if (dc.getDcHandler().updateFilter(is, block.getLocation(), filter)) {
+                        Utils.sendMessage(player, MaterialNames.getItemName(is) + " has been added to the " + filter.toString() + " filter", MsgType.INFO);
                         return false;
                     }
                     else {
-                        Utils.sendMessage(player, mat.toString() + " has been removed from the " + filter.toString() + " filter", MsgType.INFO);
+                        Utils.sendMessage(player, MaterialNames.getItemName(is) + " has been removed from the " + filter.toString() + " filter", MsgType.INFO);
                         return false;
                     }
                 } catch (MissingOrIncorrectParametersException ex) {

@@ -5,6 +5,7 @@
 package com.noheroes.dropchestnh.internals;
 
 import com.noheroes.dropchestnh.DropChestNH;
+import com.noheroes.dropchestnh.exceptions.MissingOrIncorrectParametersException;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Bukkit;
@@ -15,6 +16,7 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -108,7 +110,7 @@ public class Utils {
     }
     
     public static String getChestFilterInfoMsg(CommandSender cs, Integer chestID, Filter filter) {
-        Set<Integer> filterSet;
+        Set<String> filterSet;
         String msg;
         filterSet = DropChestNH.getInstance().getDcHandler().getFilter(chestID, filter);
         // Empty filter
@@ -120,18 +122,18 @@ public class Utils {
             msg = getColor(cs, Properties.chestFilterColor) + filter.toString() + ": All";
         }
         // Non-empty, grab material list from filter
-        else {
+        else {             
             msg = getColor(cs, Properties.chestFilterColor) + filter.toString() + ": ";
             boolean firstItem = true;
             // Loop through all items in filter and grab their material name
-            for (Integer matID : filterSet) {
+            for (String mat : filterSet) {
                 if (firstItem) {
                     firstItem = false;
                 }
                 else {
                     msg += ", ";
                 }
-                msg += Material.getMaterial(matID).toString();
+                msg += MaterialNames.getItemName(mat);
             }
         }
         return msg;
@@ -214,5 +216,95 @@ public class Utils {
             pageNr = null;
         }
         return pageNr;
+    }
+    
+    public static String itemStackToString(ItemStack is) {
+        String returnStr;
+        // Item has no durability, durability is data value
+        if (is.getType().getMaxDurability() == Properties.noDurabilityValue) {
+            returnStr = is.getTypeId() + ":" + is.getDurability();
+        }
+        // Item has a durability value, we only use the itemID
+        else {
+            returnStr = String.valueOf(is.getTypeId());
+        }
+        return returnStr;
+    }
+    
+    public static boolean compareISToString(ItemStack is, String matData) {
+        if (matData.contains(":")) {
+            String[] splitStr = matData.split(":");
+            return (splitStr[0].equals(String.valueOf(is.getTypeId())) && splitStr[1].equals(String.valueOf(is.getDurability())));
+        }
+        else {
+            return (matData.equals(String.valueOf(is.getTypeId())));
+        }
+    }
+    
+    public static String getMaterialDataFromString(String mat) throws MissingOrIncorrectParametersException {
+        if (mat.contains(":")) {
+            String[] splitStr = mat.split(":");
+            // More than one colon in the string, invalid material data
+            if (splitStr.length != 2) {
+                throw new MissingOrIncorrectParametersException(mat + " is not a valid material");
+            }
+            else {
+                Integer itemID;
+                Integer dataValue;
+                // Convert strings to ints, throw exception if we cannot
+                try {
+                    itemID = Integer.valueOf(splitStr[0]);
+                    dataValue = Integer.valueOf(splitStr[1]);
+                } catch (NumberFormatException ex) {
+                    throw new MissingOrIncorrectParametersException(mat + " is not a valid material");
+                }
+                if ((itemID == null) || (dataValue == null)) {
+                    throw new MissingOrIncorrectParametersException(mat + " is not a valid material");
+                }
+                // Material ID does not exist
+                if (Material.getMaterial(itemID) == null) {
+                    throw new MissingOrIncorrectParametersException(itemID + " is not a valid material ID");
+                }
+                // Material does not have a data value
+                if (Material.getMaterial(itemID).getMaxDurability() != Properties.noDurabilityValue) {
+                    throw new MissingOrIncorrectParametersException("Item number " + itemID + " cannot have data values");
+                }
+                return (itemID.toString() + ":" + dataValue.toString());
+            }
+        }
+        else {
+            Material material = getMaterialFromString(mat);
+            if (mat == null) {
+                throw new MissingOrIncorrectParametersException(mat + " is not a valid material");
+            }
+            return String.valueOf(material.getId());
+        }
+    }
+         
+    public static Material getMaterialFromString(String mat) {
+        Material material;
+        // Check if material is referenced by enum
+        material = Material.getMaterial(mat.toUpperCase());
+        // Material was matched
+        if (material != null) {
+            return material;
+        }
+        // Material was not matched, check if material is referenced by ID
+        else {
+            Integer materialID;
+            try {
+                materialID = Integer.valueOf(mat);
+            }
+            catch (NumberFormatException ex) {
+                // mat is not an integer or valid material
+                return null;
+            }
+            // Check if material ID exists
+            material = Material.getMaterial(materialID);
+            if (material == null) {
+                return null;
+            }
+            return material;
+        }
     }
 }
