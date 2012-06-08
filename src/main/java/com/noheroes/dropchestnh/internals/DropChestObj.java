@@ -138,7 +138,7 @@ public class DropChestObj {
     }
     
     protected boolean filterContains(ItemStack is, Filter filter) {
-        return (getFilter(filter).contains(Utils.itemStackToString(is))
+        return (getFilter(filter).contains(Utils.itemStackToString(is, true))
                 || getFilter(filter).contains(String.valueOf(is.getTypeId())));
     }
     

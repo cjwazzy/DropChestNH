@@ -217,11 +217,15 @@ public class Utils {
         }
         return pageNr;
     }
-    
+    /*
     public static String itemStackToString(ItemStack is) {
+        return Utils.itemStackToString(is, true);
+    }*/
+    
+    public static String itemStackToString(ItemStack is, boolean useDataValue) {
         String returnStr;
-        // Item has no durability, durability is data value
-        if (is.getType().getMaxDurability() == Properties.noDurabilityValue) {
+        // Item has no durability, durability is data value and data value is being used
+        if ((is.getType().getMaxDurability() == Properties.noDurabilityValue) && useDataValue) {
             returnStr = is.getTypeId() + ":" + is.getDurability();
         }
         // Item has a durability value, we only use the itemID

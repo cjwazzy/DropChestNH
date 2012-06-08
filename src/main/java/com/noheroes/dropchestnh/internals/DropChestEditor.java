@@ -53,7 +53,7 @@ public class DropChestEditor {
     
     // Called when left click is performed on a chest while the player is in edit mode
     // Returns true if edit mode should be disabled after this click, false if edit mode should stay on
-    public boolean leftClickEvent(Block block, ItemStack is) {
+    public boolean leftClickEvent(Block block, ItemStack is, boolean sneak) {
         switch(mode) {
             case ADD_CHEST:
                 // Add chest
@@ -86,12 +86,12 @@ public class DropChestEditor {
                     if (is.getType().equals(Material.AIR)) {
                         return false;
                     }
-                    if (dc.getDcHandler().updateFilter(is, block.getLocation(), filter)) {
-                        Utils.sendMessage(player, MaterialNames.getItemName(is) + " has been added to the " + filter.toString() + " filter", MsgType.INFO);
+                    if (dc.getDcHandler().updateFilter(is, block.getLocation(), filter, sneak)) {
+                        Utils.sendMessage(player, MaterialNames.getItemName(Utils.itemStackToString(is, sneak)) + " has been added to the " + filter.toString() + " filter", MsgType.INFO);
                         return false;
                     }
                     else {
-                        Utils.sendMessage(player, MaterialNames.getItemName(is) + " has been removed from the " + filter.toString() + " filter", MsgType.INFO);
+                        Utils.sendMessage(player, MaterialNames.getItemName(Utils.itemStackToString(is, sneak)) + " has been removed from the " + filter.toString() + " filter", MsgType.INFO);
                         return false;
                     }
                 } catch (MissingOrIncorrectParametersException ex) {

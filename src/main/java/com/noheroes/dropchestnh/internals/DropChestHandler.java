@@ -429,16 +429,16 @@ public class DropChestHandler {
         return addItem(dcMapLocationToID.get(location), item);
     }
     
-    public boolean updateFilter(ItemStack is, Location location, Filter filter) throws MissingOrIncorrectParametersException {
+    public boolean updateFilter(ItemStack is, Location location, Filter filter, boolean useDataValue) throws MissingOrIncorrectParametersException {
         if (location == null) {
             throw new MissingOrIncorrectParametersException("That is not a dropchest");
         }
         Integer chestID = dcMapLocationToID.get(location);
-        return updateFilter(is, chestID, filter);
+        return updateFilter(is, chestID, filter, useDataValue);
     }
     
-    public boolean updateFilter(ItemStack is, Integer chestID, Filter filter) throws MissingOrIncorrectParametersException {
-        return updateFilter(Utils.itemStackToString(is), chestID, filter);
+    public boolean updateFilter(ItemStack is, Integer chestID, Filter filter, boolean useDataValue) throws MissingOrIncorrectParametersException {
+        return updateFilter(Utils.itemStackToString(is, useDataValue), chestID, filter);
     }
     
     // Attempts to find the chestID by matching indentifier against or chestID or chest name

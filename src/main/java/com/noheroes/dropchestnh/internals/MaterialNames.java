@@ -362,7 +362,7 @@ public class MaterialNames {
                     case 13: return "Magenta Dye";
                     case 14: return "Orange Dye";
                     case 15: return "Bonemeal (White Dye)";
-                    default: return "Ink Sac (Black Dye)";
+                    default: return "Dye";
             }
             case 352: return "Bone";
             case 353: return "Sugar";
