@@ -991,7 +991,12 @@ public class DropChestHandler {
         if (couldNotPickup) {
             Player player = Bukkit.getPlayer(getChest(chestID).getOwner());
             if ((player != null) && player.isOnline()) {
-                player.sendMessage("Your dropchest #" + chestID + " is full and could not pick up an item");
+                if (getChest(chestID).getName() == null) {
+                    player.sendMessage("Your dropchest #" + chestID + " is full and could not pick up an item");
+                }
+                else {
+                    player.sendMessage("Your dropchest " + getChest(chestID).getName() + " is full and could not pick up an item");
+                }
                 getChest(chestID).playerWasWarned();
             }
         }
@@ -999,8 +1004,13 @@ public class DropChestHandler {
             Integer filled = getChest(chestID).getInventoryData().getPercentageUsed();
             if (filled > getChest(chestID).getAlmostFullThreshold()) {
                 Player player = Bukkit.getPlayer(getChest(chestID).getOwner());
-                if ((player != null) && player.isOnline()) {                
-                    player.sendMessage("Your dropchest #" + chestID + " is " + filled + "% full");
+                if ((player != null) && player.isOnline()) {     
+                    if (getChest(chestID).getName() == null) {
+                        player.sendMessage("Your dropchest #" + chestID + " is " + filled + "% full");
+                    }
+                    else {
+                        player.sendMessage("Your dropchest " + getChest(chestID).getName() + " is " + filled + "% full");
+                    }
                     getChest(chestID).playerWasWarned();
                 }
             }
